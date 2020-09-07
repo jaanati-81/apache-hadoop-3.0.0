@@ -1,0 +1,26 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-nativetask/target/native/lz4.c
+stdlib.h
+-
+endian.h
+-
+intrin.h
+-
+stdlib.h
+-
+string.h
+-
+lz4.h
+/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-nativetask/target/native/lz4.h
+stdint.h
+-
+
+/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-nativetask/target/native/lz4.h
+

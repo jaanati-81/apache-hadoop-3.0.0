@@ -1,0 +1,5 @@
+org.apache.hadoop.record
+org.apache.hadoop.streaming
+org.apache.hadoop.streaming.io
+org.apache.hadoop.streaming.mapreduce
+org.apache.hadoop.typedbytes

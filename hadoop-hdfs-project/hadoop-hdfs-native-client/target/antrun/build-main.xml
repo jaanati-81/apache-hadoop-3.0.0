@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="maven-antrun-" default="main"  >
+<target name="main" if="tar">
+  <echo file="/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-hdfs-project/hadoop-hdfs-native-client/target/dist-maketar.sh">cd &quot;/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-hdfs-project/hadoop-hdfs-native-client/target&quot;
+                      tar cf - hadoop-hdfs-native-client-3.0.0 | gzip &gt; hadoop-hdfs-native-client-3.0.0.tar.gz</echo>
+  <exec failonerror="true" dir="/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-hdfs-project/hadoop-hdfs-native-client/target" executable="bash">
+    <arg line="./dist-maketar.sh"/>
+  </exec>
+</target>
+</project>

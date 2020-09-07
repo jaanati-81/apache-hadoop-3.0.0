@@ -1,0 +1,2 @@
+/usr/bin/ar qc libgtest.a  CMakeFiles/gtest.dir/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-common-project/hadoop-common/src/main/native/gtest/gtest-all.cc.o
+/usr/bin/ranlib libgtest.a

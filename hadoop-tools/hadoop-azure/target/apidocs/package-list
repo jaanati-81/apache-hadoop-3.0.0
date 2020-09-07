@@ -1,0 +1,3 @@
+org.apache.hadoop.fs.azure
+org.apache.hadoop.fs.azure.metrics
+org.apache.hadoop.fs.azure.security
