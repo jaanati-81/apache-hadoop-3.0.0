@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<project name="maven-antrun-" default="main"  >
-<target name="main">
-  <echo/>
-  <echo>Hadoop source tar available at: /home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-dist/target/hadoop-3.0.0-src.tar.gz</echo>
-  <echo/>
-</target>
-</project>
