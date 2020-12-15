@@ -74,6 +74,17 @@ message OpReadBlockProto {
   optional CachingStrategyProto cachingStrategy = 5;
 }
 
+message OpReadBlockTraceProto {
+  required ClientOperationHeaderProto header = 1;
+  required uint64 offset = 2;
+  required uint64 len = 3;
+  optional bool sendChecksums = 4 [default = true];
+  optional CachingStrategyProto cachingStrategy = 5;
+  optional uint64 helperIndex = 6;
+  optional uint64 lostIndex = 7;
+}
+
+
 message ChecksumProto {
   required ChecksumTypeProto type = 1;
   required uint32 bytesPerChecksum = 2;
@@ -277,6 +288,22 @@ message ReadOpChecksumInfoProto {
   required uint64 chunkOffset = 2;
 }
 
+
+/**
+ * Sent as part of the BlockOpResponseProto
+ * for READ_TRACE operation.
+ */
+message ReadTraceOpChecksumInfoProto {
+  required ChecksumProto checksum = 1;
+
+  /**
+   * The offset into the block at which the first packet
+   * will start. This is necessary since reads will align
+   * backwards to a checksum chunk boundary.
+   */
+  required uint64 chunkOffset = 2;
+}
+
 message BlockOpResponseProto {
   required Status status = 1;
 
@@ -296,6 +323,7 @@ message BlockOpResponseProto {
    * read.
    */
   optional uint32 shortCircuitAccessVersion = 6;
+  optional ReadTraceOpChecksumInfoProto readTraceOpChecksumInfo = 7;
 }
 
 /**

@@ -1,1 +1,0 @@
-/usr/bin/cc  -g -O2 -Wall -pthread -D_FILE_OFFSET_BITS=64 -D_GNU_SOURCE -fvisibility=hidden    -rdynamic CMakeFiles/test_htable.dir/__/libhdfs/common/htable.c.o CMakeFiles/test_htable.dir/test_htable.c.o  -o test_htable 

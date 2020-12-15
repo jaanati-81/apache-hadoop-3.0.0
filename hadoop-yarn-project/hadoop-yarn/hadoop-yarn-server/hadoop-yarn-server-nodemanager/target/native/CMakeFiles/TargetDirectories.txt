@@ -1,7 +1,0 @@
-/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/target/native/CMakeFiles/container.dir
-/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/target/native/CMakeFiles/cetest.dir
-/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/target/native/CMakeFiles/edit_cache.dir
-/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/target/native/CMakeFiles/rebuild_cache.dir
-/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/target/native/CMakeFiles/gtest.dir
-/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/target/native/CMakeFiles/container-executor.dir
-/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/target/native/CMakeFiles/test-container-executor.dir

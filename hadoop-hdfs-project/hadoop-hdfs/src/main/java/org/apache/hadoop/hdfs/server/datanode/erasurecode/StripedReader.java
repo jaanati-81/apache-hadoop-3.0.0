@@ -62,6 +62,9 @@ class StripedReader {
 
   private final int dataBlkNum;
   private final int parityBlkNum;
+  private final int totalBlkNum;
+
+  private boolean isTr = false;
 
 
   private DataChecksum checksum;
@@ -100,15 +103,26 @@ class StripedReader {
 
     dataBlkNum = stripedReconInfo.getEcPolicy().getNumDataUnits();
     parityBlkNum = stripedReconInfo.getEcPolicy().getNumParityUnits();
+    totalBlkNum = dataBlkNum + parityBlkNum;
 
     int cellsNum = (int) ((stripedReconInfo.getBlockGroup().getNumBytes() - 1)
         / stripedReconInfo.getEcPolicy().getCellSize() + 1);
+    
+    if(stripedReconInfo.getEcPolicy().getCodecName().equals("tr")){
+        this.isTr = true;
+    	minRequiredSources = Math.min(cellsNum, (totalBlkNum - 1));
+    	 if (minRequiredSources < (totalBlkNum - 1)) {
+    	      int zeroStripNum = (totalBlkNum - 1) - minRequiredSources;
+    	      zeroStripeBuffers = new ByteBuffer[zeroStripNum];
+    	      zeroStripeIndices = new short[zeroStripNum];
+    	    }
+    } else {
     minRequiredSources = Math.min(cellsNum, dataBlkNum);
-
     if (minRequiredSources < dataBlkNum) {
-      int zeroStripNum = dataBlkNum - minRequiredSources;
-      zeroStripeBuffers = new ByteBuffer[zeroStripNum];
-      zeroStripeIndices = new short[zeroStripNum];
+        int zeroStripNum = dataBlkNum - minRequiredSources;
+        zeroStripeBuffers = new ByteBuffer[zeroStripNum];
+        zeroStripeIndices = new short[zeroStripNum];
+      }
     }
 
     // It is calculated by the maximum number of connections from either sources
@@ -168,10 +182,18 @@ class StripedReader {
   }
 
   StripedBlockReader createReader(int idxInSources, long offsetInBlock) {
-    return new StripedBlockReader(this, datanode,
-        conf, liveIndices[idxInSources],
-        reconstructor.getBlock(liveIndices[idxInSources]),
-        sources[idxInSources], offsetInBlock);
+    if(!isTr) {
+      return new StripedBlockReader(this, datanode,
+              conf, liveIndices[idxInSources],
+              reconstructor.getBlock(liveIndices[idxInSources]),
+              sources[idxInSources], offsetInBlock);
+    } else{
+      return new StripedBlockReader(this, datanode,
+              conf, liveIndices[idxInSources],
+              reconstructor.getBlock(liveIndices[idxInSources]),
+              sources[idxInSources], offsetInBlock, isTr);
+
+    }
   }
 
   private void initBufferSize() {

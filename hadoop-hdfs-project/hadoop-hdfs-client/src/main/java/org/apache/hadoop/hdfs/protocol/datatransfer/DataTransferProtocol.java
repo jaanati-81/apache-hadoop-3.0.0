@@ -71,6 +71,26 @@ public interface DataTransferProtocol {
       final long length,
       final boolean sendChecksum,
       final CachingStrategy cachingStrategy) throws IOException;
+ 
+  /**
+   * Read the trace of a block.
+   *
+   * @param blk the block being read.
+   * @param blockToken security token for accessing the block.
+   * @param clientName client's name.
+   * @param blockOffset offset of the block.
+   * @param length maximum number of bytes for this read.
+   * @param sendChecksum if false, the DN should skip reading and sending
+   *        checksums
+   * @param cachingStrategy  The caching strategy to use.
+   */
+  void readBlockTrace(final ExtendedBlock blk,
+	      final Token<BlockTokenIdentifier> blockToken,
+	      final String clientName,
+	      final long blockOffset,
+	      final long length,
+	      final boolean sendChecksum,
+	      final CachingStrategy cachingStrategy) throws IOException;
 
   /**
    * Write a block to a datanode pipeline.

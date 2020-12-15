@@ -142,6 +142,8 @@ class DataXceiverServer implements Runnable {
     Peer peer = null;
     while (datanode.shouldRun && !datanode.shutdownForUpgrade) {
       try {
+        //accept clinet/DN connection
+        //peer represents the remote node/client that this Server will be serving
         peer = peerServer.accept();
 
         // Make sure the xceiver count is not exceeded

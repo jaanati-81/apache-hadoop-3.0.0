@@ -22,7 +22,7 @@ import org.apache.hadoop.io.erasurecode.ErasureCodeConstants;
 import org.apache.hadoop.io.erasurecode.ErasureCoderOptions;
 
 /**
- * A raw coder factory for raw XOR coder.
+ * A raw coder factory for raw Trace Repair coder.
  */
 @InterfaceAudience.Private
 public class TRRawErasureCoderFactory implements RawErasureCoderFactory {

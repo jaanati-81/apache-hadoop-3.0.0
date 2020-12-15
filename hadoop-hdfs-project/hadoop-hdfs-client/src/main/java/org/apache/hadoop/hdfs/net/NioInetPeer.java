@@ -48,8 +48,8 @@ public class NioInetPeer implements Peer {
 
   public NioInetPeer(Socket socket) throws IOException {
     this.socket = socket;
-    this.in = new SocketInputStream(socket.getChannel(), 0);
-    this.out = new SocketOutputStream(socket.getChannel(), 0);
+    this.in = new SocketInputStream(socket.getChannel(), 0);//ReadableByteChannel
+    this.out = new SocketOutputStream(socket.getChannel(), 0);//WritableByteChannel
     this.isLocal = socket.getInetAddress().equals(socket.getLocalAddress());
   }
 

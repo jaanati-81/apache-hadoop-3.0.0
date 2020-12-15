@@ -37,6 +37,7 @@ import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpBlockChecksumP
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpBlockGroupChecksumProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpCopyBlockProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpReadBlockProto;
+import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpReadBlockTraceProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpReplaceBlockProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpRequestShortCircuitAccessProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpTransferBlockProto;
@@ -98,10 +99,13 @@ public abstract class Receiver implements DataTransferProtocol {
   }
 
   /** Process op by the corresponding method. */
-  protected final void processOp(Op op) throws IOException {
+  protected final void processOp (Op op) throws IOException {
     switch(op) {
     case READ_BLOCK:
       opReadBlock();
+      break;
+    case READ_TRACE:
+      opReadBlockTrace();
       break;
     case WRITE_BLOCK:
       opWriteBlock(in);
@@ -162,6 +166,27 @@ public abstract class Receiver implements DataTransferProtocol {
       if (traceScope != null) traceScope.close();
     }
   }
+  
+  /** Receive OP_READ_TRACE */
+  private void opReadBlockTrace() throws IOException {
+  OpReadBlockTraceProto proto = OpReadBlockTraceProto.parseFrom(vintPrefixed(in));
+    TraceScope traceScope = continueTraceSpan(proto.getHeader(),
+        proto.getClass().getSimpleName());
+    try {
+      readBlockTrace(PBHelperClient.convert(proto.getHeader().getBaseHeader().getBlock()),
+        PBHelperClient.convert(proto.getHeader().getBaseHeader().getToken()),
+        proto.getHeader().getClientName(),
+        proto.getOffset(),
+        proto.getLen(),
+        proto.getSendChecksums(),
+        (proto.hasCachingStrategy() ?
+            getCachingStrategy(proto.getCachingStrategy()) :
+          CachingStrategy.newDefaultStrategy()));
+    } finally {
+      if (traceScope != null) traceScope.close();
+    }
+  }
+  
   
   /** Receive OP_WRITE_BLOCK */
   private void opWriteBlock(DataInputStream in) throws IOException {

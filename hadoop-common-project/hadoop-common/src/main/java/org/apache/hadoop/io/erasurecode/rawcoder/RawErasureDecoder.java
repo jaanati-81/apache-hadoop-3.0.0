@@ -88,7 +88,7 @@ public abstract class RawErasureDecoder {
         inputs, erasedIndexes, outputs);
     ourlog.write("\n Inside RawErasureDecoder: inside decode method for ByteBuffer[]");
     boolean usingDirectBuffer = decodingState.usingDirectBuffer; //whether it is a direct buffer or not
-    int dataLen = decodingState.decodeLength;//remaining() of ByteBuffer
+    int dataLen = decodingState.decodeLength;//remaining() of ByteBuffer of first input
     if (dataLen == 0) {
       return;
     }

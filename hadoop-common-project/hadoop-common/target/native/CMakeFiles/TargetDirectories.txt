@@ -1,6 +1,0 @@
-/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-common-project/hadoop-common/target/native/CMakeFiles/rebuild_cache.dir
-/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-common-project/hadoop-common/target/native/CMakeFiles/test_bulk_crc32.dir
-/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-common-project/hadoop-common/target/native/CMakeFiles/edit_cache.dir
-/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-common-project/hadoop-common/target/native/CMakeFiles/erasure_code_test.dir
-/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-common-project/hadoop-common/target/native/CMakeFiles/hadoop_static.dir
-/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-common-project/hadoop-common/target/native/CMakeFiles/hadoop.dir

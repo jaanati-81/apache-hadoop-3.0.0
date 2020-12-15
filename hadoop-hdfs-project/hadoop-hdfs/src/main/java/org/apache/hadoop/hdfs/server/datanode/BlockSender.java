@@ -61,7 +61,7 @@ import org.slf4j.Logger;
 /**
  * Reads a block from the disk and sends it to a recipient.
  * 
- * Data sent from the BlockeSender in the following format:
+ * Data sent from the BlockSender in the following format:
  * <br><b>Data format:</b> <pre>
  *    +--------------------------------------------------+
  *    | ChecksumHeader | Sequence of data PACKETS...     |
@@ -567,6 +567,7 @@ class BlockSender implements java.io.Closeable {
       }
     }
     
+    
     int dataOff = checksumOff + checksumDataLen;
     if (!transferTo) { // normal transfer
       ris.readDataFully(buf, dataOff, dataLen);
@@ -575,7 +576,10 @@ class BlockSender implements java.io.Closeable {
         verifyChecksum(buf, dataOff, dataLen, numChunks, checksumOff);
       }
     }
-    
+    //add a new buffer
+    //again, an expensive operation
+    //compute trace (optimizing buffering involved)
+
     try {
       if (transferTo) {
         SocketOutputStream sockOut = (SocketOutputStream)out;
@@ -584,6 +588,7 @@ class BlockSender implements java.io.Closeable {
 
         // no need to flush since we know out is not a buffered stream
         FileChannel fileCh = ((FileInputStream)ris.getDataIn()).getChannel();
+
         LongWritable waitTime = new LongWritable();
         LongWritable transferTime = new LongWritable();
         fileIoProvider.transferToSocketFully(

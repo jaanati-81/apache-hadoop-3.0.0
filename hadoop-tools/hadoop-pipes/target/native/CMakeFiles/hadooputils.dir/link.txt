@@ -1,2 +1,0 @@
-/usr/bin/ar qc libhadooputils.a  CMakeFiles/hadooputils.dir/main/native/utils/impl/StringUtils.cc.o CMakeFiles/hadooputils.dir/main/native/utils/impl/SerialUtils.cc.o
-/usr/bin/ranlib libhadooputils.a

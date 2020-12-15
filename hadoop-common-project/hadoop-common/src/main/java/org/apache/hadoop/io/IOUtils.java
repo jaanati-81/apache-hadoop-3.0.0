@@ -35,7 +35,6 @@ import org.apache.commons.logging.Log;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hdfs.server.datanode.erasurecode.StripedBlockReconstructor;
 import org.apache.hadoop.util.OurECLogger;
 import org.apache.hadoop.util.Shell;
 import org.slf4j.Logger;
@@ -208,16 +207,12 @@ public class IOUtils {
     int toRead = len;
     while (toRead > 0) {
       int ret = in.read(buf, off, toRead);
-      //Print buf to OurECLog.log with case: ReadableByteChannel is null, in readFully() of IOUtils
-      ourlog.write("\n In readFully() of IOUtils, after calling read()");
       if (ret < 0) {
         throw new IOException( "Premature EOF from inputStream");
       }
       toRead -= ret;
-      ourlog.write("\n Value of toRead: "+toRead);
       off += ret;
     }
-    ourlog.write("\n Buffer value in IOUtils after reading completes: "+buf.toString());
   }
   
   /**

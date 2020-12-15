@@ -1,1 +1,0 @@
-/usr/bin/c++   -g -O2 -Wall -pthread -D_FILE_OFFSET_BITS=64 -D_GNU_SOURCE    -rdynamic CMakeFiles/pipes-sort.dir/main/native/examples/impl/sort.cc.o  -o examples/pipes-sort libhadooppipes.a libhadooputils.a -lssl -lcrypto -ldl 

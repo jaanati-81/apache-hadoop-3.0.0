@@ -23,9 +23,9 @@ import java.nio.ByteBuffer;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.hdfs.server.datanode.DataNodeFaultInjector;
 import org.apache.hadoop.hdfs.server.datanode.metrics.DataNodeMetrics;
-import org.apache.hadoop.io.erasurecode.rawcoder.RSRawDecoder;
+//import org.apache.hadoop.io.erasurecode.rawcoder.RSRawDecoder;
 import org.apache.hadoop.util.Time;
-import org.apache.hadoop.util.OurECLogger;
+//import org.apache.hadoop.util.OurECLogger;
 /**
  * StripedBlockReconstructor reconstruct one or more missed striped block in
  * the striped block group, the minimum number of live striped blocks should
@@ -36,7 +36,7 @@ class StripedBlockReconstructor extends StripedReconstructor
     implements Runnable {
 
   private StripedWriter stripedWriter;
-  private static OurECLogger ourlog = OurECLogger.getLogger(StripedBlockReconstructor.class);
+  //private static OurECLogger ourlog = OurECLogger.getLogger(StripedBlockReconstructor.class);
   StripedBlockReconstructor(ErasureCodingWorker worker,
       StripedReconstructionInfo stripedReconInfo) {
     super(worker, stripedReconInfo);
@@ -75,15 +75,6 @@ class StripedBlockReconstructor extends StripedReconstructor
       metrics.incrECReconstructionRemoteBytesRead(getRemoteBytesRead());
       metrics.incrECReconstructionBytesWritten(getBytesWritten());
       
-      ourlog.write("\nCount of erasure coding reconstruction tasks: "+ metrics.getecReconstructionTasks());
-      ourlog.write("\nNanoseconds spent by decoding tasks: "+ metrics.getecDecodingTimeNanos());
-      ourlog.write("\nBytes read by erasure coding worker: "+ metrics.getecReconstructionBytesRead());
-      ourlog.write("\nBytes written by erasure coding worker: "+ metrics.getecReconstructionBytesWritten());
-      ourlog.write("\nBytes remote read by erasure coding worker: "+ metrics.getecReconstructionRemoteBytesRead());
-      ourlog.write("\nMilliseconds spent on read by erasure coding worker: "+ metrics.getecReconstructionReadTimeMillis());
-      ourlog.write("\nMilliseconds spent on decoding by erasure coding worker: "+ metrics.getecReconstructionDecodingTimeMillis());
-      ourlog.write("\nMilliseconds spent on write by erasure coding worker: "+ metrics.getecReconstructionWriteTimeMillis());
-    
       getStripedReader().close();
       stripedWriter.close();
       cleanup();
@@ -104,7 +95,6 @@ class StripedBlockReconstructor extends StripedReconstructor
       long readEnd = Time.monotonicNow();
 
       // step2: decode to reconstruct targets
-      ourlog.write("\n In reconstruct() of StripedBlockReconstructor...\n readMinimumSources() done \n Going to call reconstructTargets()");
       reconstructTargets(toReconstructLen);
       
       long decodeEnd = Time.monotonicNow();

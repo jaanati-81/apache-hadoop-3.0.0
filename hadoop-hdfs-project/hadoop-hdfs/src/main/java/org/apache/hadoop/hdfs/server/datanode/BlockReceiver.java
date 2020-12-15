@@ -65,7 +65,7 @@ import com.google.common.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 
 /** A class that receives a block and writes to its own disk, meanwhile
- * may copies it to another site. If a throttler is provided,
+ * may copy it to another site. If a throttler is provided,
  * streaming throttling is also supported.
  **/
 class BlockReceiver implements Closeable {
@@ -504,7 +504,7 @@ class BlockReceiver implements Closeable {
    * Skip verifying checksum iff this is not the last one in the 
    * pipeline and clientName is non-null. i.e. Checksum is verified
    * on all the datanodes when the data is being written by a 
-   * datanode rather than a client. Whe client is writing the data, 
+   * datanode rather than a client. When client is writing the data, 
    * protocol includes acks and only the last datanode needs to verify 
    * checksum.
    * @return true if checksum verification is needed, otherwise false.

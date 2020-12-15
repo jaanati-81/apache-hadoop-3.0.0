@@ -19,6 +19,7 @@ package org.apache.hadoop.io.erasurecode.rawcoder;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.io.erasurecode.ErasureCoderOptions;
+import org.apache.hadoop.util.OurECLogger;
 
 import java.nio.ByteBuffer;
 
@@ -31,7 +32,7 @@ import java.nio.ByteBuffer;
  */
 @InterfaceAudience.Private
 public class XORRawEncoder extends RawErasureEncoder {
-
+	
   public XORRawEncoder(ErasureCoderOptions coderOptions) {
     super(coderOptions);
   }

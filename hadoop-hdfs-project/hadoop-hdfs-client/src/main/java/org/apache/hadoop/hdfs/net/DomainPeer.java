@@ -125,7 +125,7 @@ public class DomainPeer implements Peer {
     // for details.
     //
     // So unless you are running as root or the hdfs superuser, you cannot
-    // launch a man-in-the-middle attach on UNIX domain socket traffic.
+    // launch a man-in-the-middle attack on UNIX domain socket traffic.
     //
     return true;
   }

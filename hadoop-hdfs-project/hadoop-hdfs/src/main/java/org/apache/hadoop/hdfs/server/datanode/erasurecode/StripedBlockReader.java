@@ -25,6 +25,7 @@ import org.apache.hadoop.hdfs.BlockReader;
 import org.apache.hadoop.hdfs.DFSUtilClient;
 import org.apache.hadoop.hdfs.DFSUtilClient.CorruptedBlocks;
 import org.apache.hadoop.hdfs.client.impl.BlockReaderRemote;
+import org.apache.hadoop.hdfs.client.impl.BlockTraceReaderRemote;
 import org.apache.hadoop.hdfs.net.Peer;
 import org.apache.hadoop.hdfs.protocol.DatanodeID;
 import org.apache.hadoop.hdfs.protocol.DatanodeInfo;
@@ -68,6 +69,7 @@ class StripedBlockReader {
   private BlockReader blockReader;
   private ByteBuffer buffer;
   private boolean isLocal;
+  private boolean isTr;
 
   StripedBlockReader(StripedReader stripedReader, DataNode datanode,
                      Configuration conf, short index, ExtendedBlock block,
@@ -81,11 +83,33 @@ class StripedBlockReader {
     this.block = block;
     this.isLocal = false;
 
+
     BlockReader tmpBlockReader = createBlockReader(offsetInBlock);
     if (tmpBlockReader != null) {
       this.blockReader = tmpBlockReader;
     }
   }
+
+  StripedBlockReader(StripedReader stripedReader, DataNode datanode,
+                     Configuration conf, short index, ExtendedBlock block,
+                     DatanodeInfo source, long offsetInBlock, boolean isTr) {
+    this.stripedReader = stripedReader;
+    this.datanode = datanode;
+    this.conf = conf;
+
+    this.index = index;
+    this.source = source;
+    this.block = block;
+    this.isLocal = false;
+    //flag to indicate whether trace repiar is enabled or not
+    this.isTr = isTr;
+
+    BlockReader tmpBlockReader = createBlockReader(offsetInBlock);
+    if (tmpBlockReader != null) {
+      this.blockReader = tmpBlockReader;
+    }
+  }
+
 
   ByteBuffer getReadBuffer() {
     if (buffer == null) {
@@ -108,33 +132,45 @@ class StripedBlockReader {
     }
     try {
       InetSocketAddress dnAddr =
-          stripedReader.getSocketAddress4Transfer(source);
+              stripedReader.getSocketAddress4Transfer(source);
       Token<BlockTokenIdentifier> blockToken = datanode.getBlockAccessToken(
-          block, EnumSet.of(BlockTokenIdentifier.AccessMode.READ),
-          StorageType.EMPTY_ARRAY, new String[0]);
-        /*
-         * This can be further improved if the replica is local, then we can
-         * read directly from DN and need to check the replica is FINALIZED
-         * state, notice we should not use short-circuit local read which
-         * requires config for domain-socket in UNIX or legacy config in
-         * Windows. The network distance value isn't used for this scenario.
-         *
-         * TODO: add proper tracer
-         */
+              block, EnumSet.of(BlockTokenIdentifier.AccessMode.READ),
+              StorageType.EMPTY_ARRAY, new String[0]);
+      /*
+       * This can be further improved if the replica is local, then we can
+       * read directly from DN and need to check the replica is FINALIZED
+       * state, notice we should not use short-circuit local read which
+       * requires config for domain-socket in UNIX or legacy config in
+       * Windows. The network distance value isn't used for this scenario.
+       *
+       * TODO: add proper tracer
+       */
       Peer peer = newConnectedPeer(block, dnAddr, blockToken, source);
       if (peer.isLocal()) {
         this.isLocal = true;
       }
-      return BlockReaderRemote.newBlockReader(
-          "dummy", block, blockToken, offsetInBlock,
-          block.getNumBytes() - offsetInBlock, true, "", peer, source,
-          null, stripedReader.getCachingStrategy(), datanode.getTracer(), -1);
-    } catch (IOException e) {
+      if (!isTr) {
+        return BlockReaderRemote.newBlockReader(
+                "dummy", block, blockToken, offsetInBlock,
+                block.getNumBytes() - offsetInBlock, true, "", peer, source,
+                null, stripedReader.getCachingStrategy(), datanode.getTracer(), -1);
+
+      } else{
+        return BlockTraceReaderRemote.newBlockTraceReader(
+                "dummy", block, blockToken, offsetInBlock,
+                block.getNumBytes() - offsetInBlock, true, "", peer, source,
+                null, stripedReader.getCachingStrategy(), datanode.getTracer(), -1);
+      }
+    }
+      catch(IOException e){
       LOG.info("Exception while creating remote block reader, datanode {}",
-          source, e);
+              source, e);
       return null;
     }
-  }
+
+    }
+
+
 
   private Peer newConnectedPeer(ExtendedBlock b, InetSocketAddress addr,
                                 Token<BlockTokenIdentifier> blockToken,

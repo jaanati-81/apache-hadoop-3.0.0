@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <project name="maven-antrun-" default="main"  >
 <target name="main">
-  <copy file="/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-nativetask/../../../hadoop-common-project/hadoop-common/src/main/native/src/org/apache/hadoop/io/compress/lz4/lz4.h" todir="/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-nativetask/target/native/"/>
-  <copy file="/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-nativetask/../../../hadoop-common-project/hadoop-common/src/main/native/src/org/apache/hadoop/io/compress/lz4/lz4.c" todir="/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-nativetask/target/native/"/>
-  <copy todir="/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-nativetask/target/native/test/testData" overwrite="true">
-    <fileset dir="/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-nativetask/src/main/native/testData"/>
-  </copy>
+  <mkdir dir="/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-nativetask/target/test-dir"/>
+  <mkdir dir="/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-nativetask/target/test-dir"/>
 </target>
 </project>

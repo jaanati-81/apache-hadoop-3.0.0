@@ -46,7 +46,7 @@ import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.Status;
 import org.apache.hadoop.hdfs.protocolPB.PBHelperClient;
 import org.apache.hadoop.hdfs.security.token.block.BlockTokenIdentifier;
 import org.apache.hadoop.hdfs.server.datanode.CachingStrategy;
-import org.apache.hadoop.hdfs.server.datanode.erasurecode.StripedBlockReconstructor;
+//import org.apache.hadoop.hdfs.server.datanode.erasurecode.StripedBlockReconstructor;
 import org.apache.hadoop.hdfs.shortcircuit.ClientMmap;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.DataChecksum;
@@ -222,7 +222,7 @@ public class BlockReaderRemote implements BlockReader {
             filename, curHeader.getOffsetInBlock());
       }
       bytesNeededToFinish -= curHeader.getDataLen();
-      ourlog.write("\n In readNextPacket() of BlockReaderRemote, bytesNeededToFinish is: "+bytesNeededToFinish);
+      
     }
 
     // First packet will include some data prior to the first byte
@@ -381,7 +381,6 @@ public class BlockReaderRemote implements BlockReader {
 
   /**
    * Create a new BlockReader specifically to satisfy a read.
-   * This method also sends the OP_READ_BLOCK request.
    *
    * @param file  File location
    * @param block  The block object

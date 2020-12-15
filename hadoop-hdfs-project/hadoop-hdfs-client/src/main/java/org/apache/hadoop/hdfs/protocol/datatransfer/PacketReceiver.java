@@ -259,6 +259,7 @@ public class PacketReceiver implements Closeable {
   private static void readChannelFully(ReadableByteChannel ch, ByteBuffer buf)
       throws IOException {
     while (buf.remaining() > 0) {
+    	//ch.getFirstByte();
       int n = ch.read(buf);
       //Insert commands to print buf contents to OurECLog.log
       if (n < 0) {

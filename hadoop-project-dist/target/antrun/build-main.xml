@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <project name="maven-antrun-" default="main"  >
-<target name="main" if="tar">
-  <echo file="/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-project-dist/target/dist-maketar.sh">cd &quot;/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-project-dist/target&quot;
-                      tar cf - hadoop-project-dist-3.0.0 | gzip &gt; hadoop-project-dist-3.0.0.tar.gz</echo>
-  <exec failonerror="true" dir="/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-project-dist/target" executable="bash">
-    <arg line="./dist-maketar.sh"/>
-  </exec>
+<target name="main">
+  <mkdir dir="/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-project-dist/target/test-dir"/>
+  <mkdir dir="/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-project-dist/target/test/data"/>
 </target>
 </project>
