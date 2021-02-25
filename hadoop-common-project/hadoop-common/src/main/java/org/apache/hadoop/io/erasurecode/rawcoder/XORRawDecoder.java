@@ -48,8 +48,7 @@ public class XORRawDecoder extends RawErasureDecoder {
     // Process the inputs.
     int iIdx, oIdx;
     for (int i = 0; i < decodingState.inputs.length; i++) {
-      // Skip the erased location.
-      if (i == erasedIdx) {
+          if (i == erasedIdx) {
         continue;
       }
 

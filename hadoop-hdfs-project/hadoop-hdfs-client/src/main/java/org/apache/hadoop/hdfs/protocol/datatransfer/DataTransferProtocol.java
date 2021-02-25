@@ -90,7 +90,11 @@ public interface DataTransferProtocol {
 	      final long blockOffset,
 	      final long length,
 	      final boolean sendChecksum,
-	      final CachingStrategy cachingStrategy) throws IOException;
+	      final CachingStrategy cachingStrategy,
+          final int lostBlockIndex,
+          final int helperNodeIndex,
+          final int dataBlkNum,
+          final int parityBlkNum) throws IOException;
 
   /**
    * Write a block to a datanode pipeline.

@@ -3,7 +3,7 @@
   #%L
   Apache Hadoop Client Runtime
   %%
-  Copyright (C) 2008 - 2020 Apache Software Foundation
+  Copyright (C) 2008 - 2021 Apache Software Foundation
   %%
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -222,11 +222,11 @@
                     </transformer>
                     <transformer>
                       <resource>META-INF/LICENSE.txt</resource>
-                      <file>/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-client-modules/hadoop-client-runtime/../../LICENSE.txt</file>
+                      <file>/home/hduser/IdeaProjects/apache-hadoop-3.0.0/hadoop-client-modules/hadoop-client-runtime/../../LICENSE.txt</file>
                     </transformer>
                     <transformer>
                       <resource>META-INF/NOTICE.txt</resource>
-                      <file>/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-client-modules/hadoop-client-runtime/../../NOTICE.txt</file>
+                      <file>/home/hduser/IdeaProjects/apache-hadoop-3.0.0/hadoop-client-modules/hadoop-client-runtime/../../NOTICE.txt</file>
                     </transformer>
                     <transformer>
                       <resource>META-INF/jboss-beans.xml</resource>
@@ -268,7 +268,7 @@
                   </includes>
                   <canUpdateCopyright>false</canUpdateCopyright>
                   <roots>
-                    <root>/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-client-modules/hadoop-client-runtime</root>
+                    <root>/home/hduser/IdeaProjects/apache-hadoop-3.0.0/hadoop-client-modules/hadoop-client-runtime</root>
                   </roots>
                 </configuration>
               </execution>
@@ -276,7 +276,7 @@
             <configuration>
               <canUpdateCopyright>false</canUpdateCopyright>
               <roots>
-                <root>/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-client-modules/hadoop-client-runtime</root>
+                <root>/home/hduser/IdeaProjects/apache-hadoop-3.0.0/hadoop-client-modules/hadoop-client-runtime</root>
               </roots>
             </configuration>
           </plugin>

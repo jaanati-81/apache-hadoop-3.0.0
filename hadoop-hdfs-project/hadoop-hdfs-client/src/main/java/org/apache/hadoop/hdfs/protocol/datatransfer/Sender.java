@@ -123,16 +123,20 @@ public class Sender implements DataTransferProtocol {
       final long blockOffset,
       final long length,
       final boolean sendChecksum,
-      final CachingStrategy cachingStrategy) throws IOException {
+      final CachingStrategy cachingStrategy,
+      final int lostBlockIndex, final int helperNodeIndex,
+      final int dataBlkNum, final int parityBlkNum ) throws IOException {
 
     OpReadBlockTraceProto proto = OpReadBlockTraceProto.newBuilder()
         .setHeader(DataTransferProtoUtil.buildClientHeader(blk, clientName,
             blockToken))
         .setOffset(blockOffset)
         .setLen(length)
-          //  .setHelperIndex(i)
-
-        .setSendChecksums(sendChecksum)
+            .setHelperIndex(helperNodeIndex)
+            .setLostBlockIndex(lostBlockIndex)
+            .setDataBlkNum(dataBlkNum)
+            .setParityBlkNum(parityBlkNum)
+            .setSendChecksums(sendChecksum)
         .setCachingStrategy(getCachingStrategy(cachingStrategy))
         .build();
 

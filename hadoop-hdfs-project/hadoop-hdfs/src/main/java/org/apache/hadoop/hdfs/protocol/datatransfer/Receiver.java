@@ -181,7 +181,11 @@ public abstract class Receiver implements DataTransferProtocol {
         proto.getSendChecksums(),
         (proto.hasCachingStrategy() ?
             getCachingStrategy(proto.getCachingStrategy()) :
-          CachingStrategy.newDefaultStrategy()));
+          CachingStrategy.newDefaultStrategy()),
+        proto.getLostBlockIndex(),
+        proto.getHelperIndex(),
+        proto.getDataBlkNum(),
+        proto.getParityBlkNum());
     } finally {
       if (traceScope != null) traceScope.close();
     }

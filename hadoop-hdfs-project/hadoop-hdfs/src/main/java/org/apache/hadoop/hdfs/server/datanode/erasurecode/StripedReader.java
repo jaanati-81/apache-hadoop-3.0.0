@@ -110,6 +110,8 @@ class StripedReader {
     
     if(stripedReconInfo.getEcPolicy().getCodecName().equals("tr")){
         this.isTr = true;
+      //  if(stripedReconInfo.getLiveIndices().length != (totalBlkNum - 1))
+        //  break;
     	minRequiredSources = Math.min(cellsNum, (totalBlkNum - 1));
     	 if (minRequiredSources < (totalBlkNum - 1)) {
     	      int zeroStripNum = (totalBlkNum - 1) - minRequiredSources;
@@ -191,7 +193,8 @@ class StripedReader {
       return new StripedBlockReader(this, datanode,
               conf, liveIndices[idxInSources],
               reconstructor.getBlock(liveIndices[idxInSources]),
-              sources[idxInSources], offsetInBlock, isTr);
+              sources[idxInSources], offsetInBlock,
+              isTr, idxInSources, dataBlkNum, parityBlkNum);
 
     }
   }

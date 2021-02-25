@@ -29,7 +29,10 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.hadoop.fs.ChecksumException;
@@ -50,6 +53,7 @@ import org.apache.hadoop.net.SocketOutputStream;
 import org.apache.hadoop.util.AutoCloseableLock;
 import org.apache.hadoop.util.DataChecksum;
 import org.apache.htrace.core.TraceScope;
+import org.apache.hadoop.hdfs.server.datanode.erasurecode.HelperTable96;
 
 import static org.apache.hadoop.io.nativeio.NativeIO.POSIX.POSIX_FADV_DONTNEED;
 import static org.apache.hadoop.io.nativeio.NativeIO.POSIX.POSIX_FADV_SEQUENTIAL;
@@ -168,6 +172,16 @@ class BlockTraceSender implements java.io.Closeable {
     private long lastCacheDropOffset;
     private final FileIoProvider fileIoProvider;
 
+    /** The total number of blocks of this Erasure cod setting*/
+    private final int totalBlocks;
+    /** The index of the lost block of the stripe in this Erasure cod setting*/
+    private final int lostBlockIndex;
+    /** The index of this helper node of this Erasure cod setting*/
+    private final int helperNodeIndex;
+
+    /** to access entries of the Helper table */
+    private  HelperTable96 helperTable = new HelperTable96();
+
     @VisibleForTesting
     static long CACHE_DROP_INTERVAL_BYTES = 1024 * 1024; // 1MB
 
@@ -193,7 +207,7 @@ class BlockTraceSender implements java.io.Closeable {
     BlockTraceSender(ExtendedBlock block, long startOffset, long length,
                 boolean corruptChecksumOk, boolean verifyChecksum,
                 boolean sendChecksum, DataNode datanode, String clientTraceFmt,
-                CachingStrategy cachingStrategy)
+                CachingStrategy cachingStrategy, int lostBlockIndex, int helperNodeIndex, int dataBlkNum, int parityBlkNum)
             throws IOException {
         InputStream blockIn = null;
         DataInputStream checksumIn = null;
@@ -204,6 +218,9 @@ class BlockTraceSender implements java.io.Closeable {
             this.corruptChecksumOk = corruptChecksumOk;
             this.verifyChecksum = verifyChecksum;
             this.clientTraceFmt = clientTraceFmt;
+            this.totalBlocks = dataBlkNum + parityBlkNum;
+            this.lostBlockIndex = lostBlockIndex;
+            this.helperNodeIndex = helperNodeIndex;
 
             /*
              * If the client asked for the cache to be dropped behind all reads,
@@ -335,8 +352,7 @@ class BlockTraceSender implements java.io.Closeable {
                     if ((e.getMessage() != null) && !(e.getMessage()
                             .contains("Too many open files"))) {
                         // The replica is on its volume map but not on disk
-                        datanode
-                                .notifyNamenodeDeletedBlock(block, replica.getStorageUuid());
+                        datanode.notifyNamenodeDeletedBlock(block, replica.getStorageUuid());
                         datanode.data.invalidate(block.getBlockPoolId(),
                                 new Block[] {block.getLocalBlock()});
                     }
@@ -428,6 +444,40 @@ class BlockTraceSender implements java.io.Closeable {
     }
 
     /**
+     * Function to return the bit at some position from a byte
+     * @param b the input byte
+     * @param position the position to get the bit from
+     */
+
+    private boolean getBit(byte b, int position){
+
+        return (1 == ((b >> position) & 1));
+    }
+
+
+    /**
+     * Function to return all set bit positions of a number
+     * @param inputNumber an integer input
+     */
+    private List<Integer> getBitPositions(int inputNumber) {
+        List<Integer> positions = new ArrayList<>();
+        int index = 0; // start at bit index 0
+
+        while (inputNumber != 0) { // If the number is 0, no bits are set
+
+            // check if the bit at the current index 0 is set
+            if ((inputNumber & 1) == 1)
+                // it is, save this bit index to a List.
+                positions.add(index);
+            // advance to the next bit position to check
+            inputNumber = inputNumber >> 1; // shift all bits one position to the right
+            index = index + 1;              // we have to now look at the next index.
+        }
+        return positions;
+    }
+
+
+    /**
      * close opened files.
      */
     @Override
@@ -508,6 +558,79 @@ class BlockTraceSender implements java.io.Closeable {
         return ioe;
     }
 
+
+
+   /* private void helperTrace(byte[] codeWord, int erasedIndex) throws IOException{
+
+        System.out.println("\n Computing traces...");
+        computeTraces(codeWord, erasedIndex);
+
+        System.out.print("\n Helper Table Elements: \n");
+
+        for(int m = 0; m < traceElements.size(); m++) {
+            System.out.print("\n");
+            System.out.print("\t" + traceElements.get(m));
+        }
+        //System.in.read();
+
+        System.out.print("\n Helper Traces from all helpers: \n");
+        for(int i = 0; i < helperTraces.size(); i++) {
+            System.out.print("\n");
+            System.out.print("\t"+helperTraces.get(i));
+
+        }
+        //System.in.read();
+
+
+    } */
+
+    /**
+     * Function to compute helper traces of the bytes from this helper node
+     * Runs at each of the helper node and sends to the worker node for recovery
+     * @param codeSymbols the code symbol byte array corresponding to the block contents
+     * @param lostBlockIndex the erased node index
+     * @return the traces of all bytes from this block
+     * @throws IOException
+     */
+
+   private BitSet computeTraces(byte[] codeSymbols, int lostBlockIndex) throws IOException {
+
+        int i = lostBlockIndex;
+        int k = 0;
+        int j = helperNodeIndex;
+        BitSet helperTraces = new BitSet();
+
+        Object element = helperTable.getElement(j,i);
+        String s = element.toString();
+        String[] elements = s.split(",");
+        int traceBandwidth = Integer.parseInt(elements[0]);
+
+        //Iterate though all bytes of the byte array which has the block's data
+        //for each byte, find the helper trace, add it to the helperTraces bitset
+       int p =0;
+       for(byte codeSymbol : codeSymbols){
+            for (int l = 1; l <= traceBandwidth; l++) {
+                String helperString = elements[l].toString();
+                Integer helperInt = Integer.parseInt(helperString.trim());
+
+                //Find the set bit positions of the helper table element
+                List<Integer> positions = getBitPositions(helperInt);
+
+                boolean traceBitsXor = false;
+
+                for(int m = 0; m < positions.size(); m++) {
+                    //XOR all bits of the codeword at the set positions of H table element
+                    traceBitsXor = traceBitsXor ^ getBit(codeSymbol, positions.get(m));
+                }
+                helperTraces.set(p,traceBitsXor);
+                p++;
+            }
+        }
+       return(helperTraces);
+
+
+   }
+
     /**
      * @param datalen Length of data
      * @return number of chunks for data of given size
@@ -570,8 +693,17 @@ class BlockTraceSender implements java.io.Closeable {
 
         int dataOff = checksumOff + checksumDataLen;
         if (!transferTo) { // normal transfer
-            //TRACE COMPUTATION CALL
+
             ris.readDataFully(buf, dataOff, dataLen);
+
+            //TRACE COMPUTATION CALL
+            BitSet helperTraces = computeTraces(buf, lostBlockIndex);
+
+            //convert the BitSet to byte array
+            byte[] traceByte = helperTraces.toByteArray();
+
+            //Copy the contents to buf, so buf gets replaced with helperTrace contents
+            buf = traceByte.clone();
 
             if (verifyChecksum) {
                 verifyChecksum(buf, dataOff, dataLen, numChunks, checksumOff);
@@ -579,7 +711,7 @@ class BlockTraceSender implements java.io.Closeable {
         }
 
         try {
-            if (transferTo) {
+            /*if (transferTo) {
                 SocketOutputStream sockOut = (SocketOutputStream)out;
                 // First write header and checksums
                 sockOut.write(buf, headerOff, dataOff - headerOff);
@@ -595,11 +727,15 @@ class BlockTraceSender implements java.io.Closeable {
                 datanode.metrics.addSendDataPacketBlockedOnNetworkNanos(waitTime.get());
                 datanode.metrics.addSendDataPacketTransferNanos(transferTime.get());
                 blockInPosition += dataLen;
-            } else {
+            } else { */
+
+
                 // normal transfer
                 //TRACE COMPUTATION CALL
+
+            //regenerate the buf obj to store all traces computed
                 out.write(buf, headerOff, dataOff + dataLen - headerOff);
-            }
+
         } catch (IOException e) {
             if (e instanceof SocketTimeoutException) {
                 /*
@@ -719,9 +855,10 @@ class BlockTraceSender implements java.io.Closeable {
     long sendBlock(DataOutputStream out, OutputStream baseStream,
                    DataTransferThrottler throttler) throws IOException {
         final TraceScope scope = datanode.getTracer().
-                newScope("sendBlock_" + block.getBlockId());
+                newScope("sendBlockTrace_" + block.getBlockId());
         try {
             return doSendBlock(out, baseStream, throttler);
+
         } finally {
             scope.close();
         }
@@ -751,10 +888,10 @@ class BlockTraceSender implements java.io.Closeable {
         try {
             int maxChunksPerPacket;
             int pktBufSize = PacketHeader.PKT_MAX_HEADER_LEN;
-            boolean transferTo = transferToAllowed && !verifyChecksum
+          /*  boolean transferTo = transferToAllowed && !verifyChecksum
                     && baseStream instanceof SocketOutputStream
-                    && ris.getDataIn() instanceof FileInputStream;
-            if (transferTo) {
+                    && ris.getDataIn() instanceof FileInputStream; */
+           /* if (transferTo) {
                 FileChannel fileChannel =
                         ((FileInputStream)ris.getDataIn()).getChannel();
                 blockInPosition = fileChannel.position();
@@ -763,19 +900,19 @@ class BlockTraceSender implements java.io.Closeable {
 
                 // Smaller packet size to only hold checksum when doing transferTo
                 pktBufSize += checksumSize * maxChunksPerPacket;
-            } else {
-                maxChunksPerPacket = Math.max(1,
+            } else { */
+                 maxChunksPerPacket = Math.max(1,
                         numberOfChunks(IO_FILE_BUFFER_SIZE));
                 // Packet size includes both checksum and data
                 pktBufSize += (chunkSize + checksumSize) * maxChunksPerPacket;
-            }
+            //}
 
             ByteBuffer pktBuf = ByteBuffer.allocate(pktBufSize);
 
             while (endOffset > offset && !Thread.currentThread().isInterrupted()) {
                 manageOsCache();
                 long len = sendPacket(pktBuf, maxChunksPerPacket, streamForSendChunks,
-                        transferTo, throttler);
+                        false, throttler);
                 offset += len;
                 totalRead += len + (numberOfChunks(len) * checksumSize);
                 seqno++;
@@ -784,7 +921,7 @@ class BlockTraceSender implements java.io.Closeable {
             if (!Thread.currentThread().isInterrupted()) {
                 try {
                     // send an empty packet to mark the end of the block
-                    sendPacket(pktBuf, maxChunksPerPacket, streamForSendChunks, transferTo,
+                    sendPacket(pktBuf, maxChunksPerPacket, streamForSendChunks, false,
                             throttler);
                     out.flush();
                 } catch (IOException e) { //socket error

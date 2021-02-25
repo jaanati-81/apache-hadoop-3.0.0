@@ -677,13 +677,17 @@ class DataXceiver extends Receiver implements Runnable {
       final long blockOffset,
       final long length,
       final boolean sendChecksum,
-      final CachingStrategy cachingStrategy) throws IOException {
+      final CachingStrategy cachingStrategy,
+                           final int lostBlockIndex,
+                           final int helperNodeIndex,
+                           final int dataBlkNum,
+                           final int parityBlkNum) throws IOException {
     previousOpClientName = clientName;
     long read = 0;
     updateCurrentThreadName("Sending block " + block);
     OutputStream baseStream = getOutputStream();
     DataOutputStream out = getBufferedOutputStream();
-    checkAccess(out, true, block, blockToken, Op.READ_BLOCK,
+    checkAccess(out, true, block, blockToken, Op.READ_TRACE,
         BlockTokenIdentifier.AccessMode.READ);
 
     // send the block
@@ -702,7 +706,7 @@ class DataXceiver extends Receiver implements Runnable {
       try {
         blockTraceSender = new BlockTraceSender(block, blockOffset, length,
             true, false, sendChecksum, datanode, clientTraceFmt,
-            cachingStrategy);
+            cachingStrategy, lostBlockIndex, helperNodeIndex, dataBlkNum, parityBlkNum);
       } catch(IOException e) {
         String msg = "opReadBlockTrace " + block + " received exception " + e;
         LOG.info(msg);
@@ -762,7 +766,7 @@ class DataXceiver extends Receiver implements Runnable {
     }
 
     //update metrics
-    datanode.metrics.addReadBlockOp(elapsed());
+    datanode.metrics.addReadBlockTraceOp(elapsed());
     datanode.metrics.incrReadsFromClient(peer.isLocal(), read);
   }
 

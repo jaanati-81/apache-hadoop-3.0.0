@@ -80,8 +80,10 @@ message OpReadBlockTraceProto {
   required uint64 len = 3;
   optional bool sendChecksums = 4 [default = true];
   optional CachingStrategyProto cachingStrategy = 5;
-  optional uint64 helperIndex = 6;
-  optional uint64 lostIndex = 7;
+  required uint32 helperIndex = 6;
+  required uint32 lostBlockIndex = 7;
+  required uint32 dataBlkNum = 8;
+  required uint32 parityBlkNum = 9;
 }
 
 

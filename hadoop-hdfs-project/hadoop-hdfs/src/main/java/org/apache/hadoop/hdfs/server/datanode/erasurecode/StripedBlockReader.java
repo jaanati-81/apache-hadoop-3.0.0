@@ -36,6 +36,7 @@ import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.OurECLogger;
+//import org.apache.hadoop.io.erasurecode;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -70,6 +71,9 @@ class StripedBlockReader {
   private ByteBuffer buffer;
   private boolean isLocal;
   private boolean isTr;
+  private int helperIndex;
+  private int dataBlkNum;
+  private int parityBlkNum;
 
   StripedBlockReader(StripedReader stripedReader, DataNode datanode,
                      Configuration conf, short index, ExtendedBlock block,
@@ -92,10 +96,12 @@ class StripedBlockReader {
 
   StripedBlockReader(StripedReader stripedReader, DataNode datanode,
                      Configuration conf, short index, ExtendedBlock block,
-                     DatanodeInfo source, long offsetInBlock, boolean isTr) {
+                     DatanodeInfo source, long offsetInBlock,
+                     boolean isTr, int helperIndex, int dataBlkNum, int parityBlkNum) {
     this.stripedReader = stripedReader;
     this.datanode = datanode;
     this.conf = conf;
+
 
     this.index = index;
     this.source = source;
@@ -103,7 +109,10 @@ class StripedBlockReader {
     this.isLocal = false;
     //flag to indicate whether trace repiar is enabled or not
     this.isTr = isTr;
-
+    //pass helper node's index to look up TR table
+    this.helperIndex = helperIndex;
+    this.dataBlkNum = dataBlkNum;
+    this.parityBlkNum = parityBlkNum;
     BlockReader tmpBlockReader = createBlockReader(offsetInBlock);
     if (tmpBlockReader != null) {
       this.blockReader = tmpBlockReader;
@@ -159,7 +168,8 @@ class StripedBlockReader {
         return BlockTraceReaderRemote.newBlockTraceReader(
                 "dummy", block, blockToken, offsetInBlock,
                 block.getNumBytes() - offsetInBlock, true, "", peer, source,
-                null, stripedReader.getCachingStrategy(), datanode.getTracer(), -1);
+                null, stripedReader.getCachingStrategy(), datanode.getTracer(), -1,
+                index, helperIndex, dataBlkNum, parityBlkNum);
       }
     }
       catch(IOException e){

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <project name="maven-antrun-" default="main"  >
 <target name="main">
-  <mkdir dir="/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-common-project/hadoop-kms/target/test-dir"/>
-  <mkdir dir="/home/hduser/Documents/Our_Project/hadoop-3.0.0-src/hadoop-common-project/hadoop-kms/target/test-dir"/>
+  <mkdir dir="/home/hduser/IdeaProjects/apache-hadoop-3.0.0/hadoop-common-project/hadoop-kms/target/test-dir"/>
+  <mkdir dir="/home/hduser/IdeaProjects/apache-hadoop-3.0.0/hadoop-common-project/hadoop-kms/target/test-dir"/>
 </target>
 </project>

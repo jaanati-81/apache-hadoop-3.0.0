@@ -5390,25 +5390,45 @@ public final class DataTransferProtos {
      */
     org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.CachingStrategyProtoOrBuilder getCachingStrategyOrBuilder();
 
-    // optional uint64 helperIndex = 6;
+    // required uint32 helperIndex = 6;
     /**
-     * <code>optional uint64 helperIndex = 6;</code>
+     * <code>required uint32 helperIndex = 6;</code>
      */
     boolean hasHelperIndex();
     /**
-     * <code>optional uint64 helperIndex = 6;</code>
+     * <code>required uint32 helperIndex = 6;</code>
      */
-    long getHelperIndex();
+    int getHelperIndex();
 
-    // optional uint64 lostIndex = 7;
+    // required uint32 lostBlockIndex = 7;
     /**
-     * <code>optional uint64 lostIndex = 7;</code>
+     * <code>required uint32 lostBlockIndex = 7;</code>
      */
-    boolean hasLostIndex();
+    boolean hasLostBlockIndex();
     /**
-     * <code>optional uint64 lostIndex = 7;</code>
+     * <code>required uint32 lostBlockIndex = 7;</code>
      */
-    long getLostIndex();
+    int getLostBlockIndex();
+
+    // required uint32 dataBlkNum = 8;
+    /**
+     * <code>required uint32 dataBlkNum = 8;</code>
+     */
+    boolean hasDataBlkNum();
+    /**
+     * <code>required uint32 dataBlkNum = 8;</code>
+     */
+    int getDataBlkNum();
+
+    // required uint32 parityBlkNum = 9;
+    /**
+     * <code>required uint32 parityBlkNum = 9;</code>
+     */
+    boolean hasParityBlkNum();
+    /**
+     * <code>required uint32 parityBlkNum = 9;</code>
+     */
+    int getParityBlkNum();
   }
   /**
    * Protobuf type {@code hadoop.hdfs.OpReadBlockTraceProto}
@@ -5504,12 +5524,22 @@ public final class DataTransferProtos {
             }
             case 48: {
               bitField0_ |= 0x00000020;
-              helperIndex_ = input.readUInt64();
+              helperIndex_ = input.readUInt32();
               break;
             }
             case 56: {
               bitField0_ |= 0x00000040;
-              lostIndex_ = input.readUInt64();
+              lostBlockIndex_ = input.readUInt32();
+              break;
+            }
+            case 64: {
+              bitField0_ |= 0x00000080;
+              dataBlkNum_ = input.readUInt32();
+              break;
+            }
+            case 72: {
+              bitField0_ |= 0x00000100;
+              parityBlkNum_ = input.readUInt32();
               break;
             }
           }
@@ -5644,36 +5674,68 @@ public final class DataTransferProtos {
       return cachingStrategy_;
     }
 
-    // optional uint64 helperIndex = 6;
+    // required uint32 helperIndex = 6;
     public static final int HELPERINDEX_FIELD_NUMBER = 6;
-    private long helperIndex_;
+    private int helperIndex_;
     /**
-     * <code>optional uint64 helperIndex = 6;</code>
+     * <code>required uint32 helperIndex = 6;</code>
      */
     public boolean hasHelperIndex() {
       return ((bitField0_ & 0x00000020) == 0x00000020);
     }
     /**
-     * <code>optional uint64 helperIndex = 6;</code>
+     * <code>required uint32 helperIndex = 6;</code>
      */
-    public long getHelperIndex() {
+    public int getHelperIndex() {
       return helperIndex_;
     }
 
-    // optional uint64 lostIndex = 7;
-    public static final int LOSTINDEX_FIELD_NUMBER = 7;
-    private long lostIndex_;
+    // required uint32 lostBlockIndex = 7;
+    public static final int LOSTBLOCKINDEX_FIELD_NUMBER = 7;
+    private int lostBlockIndex_;
     /**
-     * <code>optional uint64 lostIndex = 7;</code>
+     * <code>required uint32 lostBlockIndex = 7;</code>
      */
-    public boolean hasLostIndex() {
+    public boolean hasLostBlockIndex() {
       return ((bitField0_ & 0x00000040) == 0x00000040);
     }
     /**
-     * <code>optional uint64 lostIndex = 7;</code>
+     * <code>required uint32 lostBlockIndex = 7;</code>
      */
-    public long getLostIndex() {
-      return lostIndex_;
+    public int getLostBlockIndex() {
+      return lostBlockIndex_;
+    }
+
+    // required uint32 dataBlkNum = 8;
+    public static final int DATABLKNUM_FIELD_NUMBER = 8;
+    private int dataBlkNum_;
+    /**
+     * <code>required uint32 dataBlkNum = 8;</code>
+     */
+    public boolean hasDataBlkNum() {
+      return ((bitField0_ & 0x00000080) == 0x00000080);
+    }
+    /**
+     * <code>required uint32 dataBlkNum = 8;</code>
+     */
+    public int getDataBlkNum() {
+      return dataBlkNum_;
+    }
+
+    // required uint32 parityBlkNum = 9;
+    public static final int PARITYBLKNUM_FIELD_NUMBER = 9;
+    private int parityBlkNum_;
+    /**
+     * <code>required uint32 parityBlkNum = 9;</code>
+     */
+    public boolean hasParityBlkNum() {
+      return ((bitField0_ & 0x00000100) == 0x00000100);
+    }
+    /**
+     * <code>required uint32 parityBlkNum = 9;</code>
+     */
+    public int getParityBlkNum() {
+      return parityBlkNum_;
     }
 
     private void initFields() {
@@ -5682,8 +5744,10 @@ public final class DataTransferProtos {
       len_ = 0L;
       sendChecksums_ = true;
       cachingStrategy_ = org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.CachingStrategyProto.getDefaultInstance();
-      helperIndex_ = 0L;
-      lostIndex_ = 0L;
+      helperIndex_ = 0;
+      lostBlockIndex_ = 0;
+      dataBlkNum_ = 0;
+      parityBlkNum_ = 0;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -5699,6 +5763,22 @@ public final class DataTransferProtos {
         return false;
       }
       if (!hasLen()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasHelperIndex()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasLostBlockIndex()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasDataBlkNum()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasParityBlkNum()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -5729,10 +5809,16 @@ public final class DataTransferProtos {
         output.writeMessage(5, cachingStrategy_);
       }
       if (((bitField0_ & 0x00000020) == 0x00000020)) {
-        output.writeUInt64(6, helperIndex_);
+        output.writeUInt32(6, helperIndex_);
       }
       if (((bitField0_ & 0x00000040) == 0x00000040)) {
-        output.writeUInt64(7, lostIndex_);
+        output.writeUInt32(7, lostBlockIndex_);
+      }
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+        output.writeUInt32(8, dataBlkNum_);
+      }
+      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+        output.writeUInt32(9, parityBlkNum_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -5765,11 +5851,19 @@ public final class DataTransferProtos {
       }
       if (((bitField0_ & 0x00000020) == 0x00000020)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt64Size(6, helperIndex_);
+          .computeUInt32Size(6, helperIndex_);
       }
       if (((bitField0_ & 0x00000040) == 0x00000040)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt64Size(7, lostIndex_);
+          .computeUInt32Size(7, lostBlockIndex_);
+      }
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(8, dataBlkNum_);
+      }
+      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(9, parityBlkNum_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -5824,10 +5918,20 @@ public final class DataTransferProtos {
         result = result && (getHelperIndex()
             == other.getHelperIndex());
       }
-      result = result && (hasLostIndex() == other.hasLostIndex());
-      if (hasLostIndex()) {
-        result = result && (getLostIndex()
-            == other.getLostIndex());
+      result = result && (hasLostBlockIndex() == other.hasLostBlockIndex());
+      if (hasLostBlockIndex()) {
+        result = result && (getLostBlockIndex()
+            == other.getLostBlockIndex());
+      }
+      result = result && (hasDataBlkNum() == other.hasDataBlkNum());
+      if (hasDataBlkNum()) {
+        result = result && (getDataBlkNum()
+            == other.getDataBlkNum());
+      }
+      result = result && (hasParityBlkNum() == other.hasParityBlkNum());
+      if (hasParityBlkNum()) {
+        result = result && (getParityBlkNum()
+            == other.getParityBlkNum());
       }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
@@ -5864,11 +5968,19 @@ public final class DataTransferProtos {
       }
       if (hasHelperIndex()) {
         hash = (37 * hash) + HELPERINDEX_FIELD_NUMBER;
-        hash = (53 * hash) + hashLong(getHelperIndex());
+        hash = (53 * hash) + getHelperIndex();
       }
-      if (hasLostIndex()) {
-        hash = (37 * hash) + LOSTINDEX_FIELD_NUMBER;
-        hash = (53 * hash) + hashLong(getLostIndex());
+      if (hasLostBlockIndex()) {
+        hash = (37 * hash) + LOSTBLOCKINDEX_FIELD_NUMBER;
+        hash = (53 * hash) + getLostBlockIndex();
+      }
+      if (hasDataBlkNum()) {
+        hash = (37 * hash) + DATABLKNUM_FIELD_NUMBER;
+        hash = (53 * hash) + getDataBlkNum();
+      }
+      if (hasParityBlkNum()) {
+        hash = (37 * hash) + PARITYBLKNUM_FIELD_NUMBER;
+        hash = (53 * hash) + getParityBlkNum();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -5999,10 +6111,14 @@ public final class DataTransferProtos {
           cachingStrategyBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000010);
-        helperIndex_ = 0L;
+        helperIndex_ = 0;
         bitField0_ = (bitField0_ & ~0x00000020);
-        lostIndex_ = 0L;
+        lostBlockIndex_ = 0;
         bitField0_ = (bitField0_ & ~0x00000040);
+        dataBlkNum_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000080);
+        parityBlkNum_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000100);
         return this;
       }
 
@@ -6066,7 +6182,15 @@ public final class DataTransferProtos {
         if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
           to_bitField0_ |= 0x00000040;
         }
-        result.lostIndex_ = lostIndex_;
+        result.lostBlockIndex_ = lostBlockIndex_;
+        if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
+          to_bitField0_ |= 0x00000080;
+        }
+        result.dataBlkNum_ = dataBlkNum_;
+        if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
+          to_bitField0_ |= 0x00000100;
+        }
+        result.parityBlkNum_ = parityBlkNum_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -6101,8 +6225,14 @@ public final class DataTransferProtos {
         if (other.hasHelperIndex()) {
           setHelperIndex(other.getHelperIndex());
         }
-        if (other.hasLostIndex()) {
-          setLostIndex(other.getLostIndex());
+        if (other.hasLostBlockIndex()) {
+          setLostBlockIndex(other.getLostBlockIndex());
+        }
+        if (other.hasDataBlkNum()) {
+          setDataBlkNum(other.getDataBlkNum());
+        }
+        if (other.hasParityBlkNum()) {
+          setParityBlkNum(other.getParityBlkNum());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -6118,6 +6248,22 @@ public final class DataTransferProtos {
           return false;
         }
         if (!hasLen()) {
+          
+          return false;
+        }
+        if (!hasHelperIndex()) {
+          
+          return false;
+        }
+        if (!hasLostBlockIndex()) {
+          
+          return false;
+        }
+        if (!hasDataBlkNum()) {
+          
+          return false;
+        }
+        if (!hasParityBlkNum()) {
           
           return false;
         }
@@ -6480,68 +6626,134 @@ public final class DataTransferProtos {
         return cachingStrategyBuilder_;
       }
 
-      // optional uint64 helperIndex = 6;
-      private long helperIndex_ ;
+      // required uint32 helperIndex = 6;
+      private int helperIndex_ ;
       /**
-       * <code>optional uint64 helperIndex = 6;</code>
+       * <code>required uint32 helperIndex = 6;</code>
        */
       public boolean hasHelperIndex() {
         return ((bitField0_ & 0x00000020) == 0x00000020);
       }
       /**
-       * <code>optional uint64 helperIndex = 6;</code>
+       * <code>required uint32 helperIndex = 6;</code>
        */
-      public long getHelperIndex() {
+      public int getHelperIndex() {
         return helperIndex_;
       }
       /**
-       * <code>optional uint64 helperIndex = 6;</code>
+       * <code>required uint32 helperIndex = 6;</code>
        */
-      public Builder setHelperIndex(long value) {
+      public Builder setHelperIndex(int value) {
         bitField0_ |= 0x00000020;
         helperIndex_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional uint64 helperIndex = 6;</code>
+       * <code>required uint32 helperIndex = 6;</code>
        */
       public Builder clearHelperIndex() {
         bitField0_ = (bitField0_ & ~0x00000020);
-        helperIndex_ = 0L;
+        helperIndex_ = 0;
         onChanged();
         return this;
       }
 
-      // optional uint64 lostIndex = 7;
-      private long lostIndex_ ;
+      // required uint32 lostBlockIndex = 7;
+      private int lostBlockIndex_ ;
       /**
-       * <code>optional uint64 lostIndex = 7;</code>
+       * <code>required uint32 lostBlockIndex = 7;</code>
        */
-      public boolean hasLostIndex() {
+      public boolean hasLostBlockIndex() {
         return ((bitField0_ & 0x00000040) == 0x00000040);
       }
       /**
-       * <code>optional uint64 lostIndex = 7;</code>
+       * <code>required uint32 lostBlockIndex = 7;</code>
        */
-      public long getLostIndex() {
-        return lostIndex_;
+      public int getLostBlockIndex() {
+        return lostBlockIndex_;
       }
       /**
-       * <code>optional uint64 lostIndex = 7;</code>
+       * <code>required uint32 lostBlockIndex = 7;</code>
        */
-      public Builder setLostIndex(long value) {
+      public Builder setLostBlockIndex(int value) {
         bitField0_ |= 0x00000040;
-        lostIndex_ = value;
+        lostBlockIndex_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional uint64 lostIndex = 7;</code>
+       * <code>required uint32 lostBlockIndex = 7;</code>
        */
-      public Builder clearLostIndex() {
+      public Builder clearLostBlockIndex() {
         bitField0_ = (bitField0_ & ~0x00000040);
-        lostIndex_ = 0L;
+        lostBlockIndex_ = 0;
+        onChanged();
+        return this;
+      }
+
+      // required uint32 dataBlkNum = 8;
+      private int dataBlkNum_ ;
+      /**
+       * <code>required uint32 dataBlkNum = 8;</code>
+       */
+      public boolean hasDataBlkNum() {
+        return ((bitField0_ & 0x00000080) == 0x00000080);
+      }
+      /**
+       * <code>required uint32 dataBlkNum = 8;</code>
+       */
+      public int getDataBlkNum() {
+        return dataBlkNum_;
+      }
+      /**
+       * <code>required uint32 dataBlkNum = 8;</code>
+       */
+      public Builder setDataBlkNum(int value) {
+        bitField0_ |= 0x00000080;
+        dataBlkNum_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required uint32 dataBlkNum = 8;</code>
+       */
+      public Builder clearDataBlkNum() {
+        bitField0_ = (bitField0_ & ~0x00000080);
+        dataBlkNum_ = 0;
+        onChanged();
+        return this;
+      }
+
+      // required uint32 parityBlkNum = 9;
+      private int parityBlkNum_ ;
+      /**
+       * <code>required uint32 parityBlkNum = 9;</code>
+       */
+      public boolean hasParityBlkNum() {
+        return ((bitField0_ & 0x00000100) == 0x00000100);
+      }
+      /**
+       * <code>required uint32 parityBlkNum = 9;</code>
+       */
+      public int getParityBlkNum() {
+        return parityBlkNum_;
+      }
+      /**
+       * <code>required uint32 parityBlkNum = 9;</code>
+       */
+      public Builder setParityBlkNum(int value) {
+        bitField0_ |= 0x00000100;
+        parityBlkNum_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required uint32 parityBlkNum = 9;</code>
+       */
+      public Builder clearParityBlkNum() {
+        bitField0_ = (bitField0_ & ~0x00000100);
+        parityBlkNum_ = 0;
         onChanged();
         return this;
       }
@@ -28478,120 +28690,121 @@ public final class DataTransferProtos {
       "p.hdfs.ClientOperationHeaderProto\022\016\n\006off" +
       "set\030\002 \002(\004\022\013\n\003len\030\003 \002(\004\022\033\n\rsendChecksums\030" +
       "\004 \001(\010:\004true\022:\n\017cachingStrategy\030\005 \001(\0132!.h" +
-      "adoop.hdfs.CachingStrategyProto\"\356\001\n\025OpRe" +
+      "adoop.hdfs.CachingStrategyProto\"\235\002\n\025OpRe" +
       "adBlockTraceProto\0227\n\006header\030\001 \002(\0132\'.hado" +
       "op.hdfs.ClientOperationHeaderProto\022\016\n\006of" +
       "fset\030\002 \002(\004\022\013\n\003len\030\003 \002(\004\022\033\n\rsendChecksums" +
       "\030\004 \001(\010:\004true\022:\n\017cachingStrategy\030\005 \001(\0132!." +
       "hadoop.hdfs.CachingStrategyProto\022\023\n\013help" +
-      "erIndex\030\006 \001(\004\022\021\n\tlostIndex\030\007 \001(\004\"W\n\rChec",
-      "ksumProto\022,\n\004type\030\001 \002(\0162\036.hadoop.hdfs.Ch" +
-      "ecksumTypeProto\022\030\n\020bytesPerChecksum\030\002 \002(" +
-      "\r\"\305\007\n\021OpWriteBlockProto\0227\n\006header\030\001 \002(\0132" +
-      "\'.hadoop.hdfs.ClientOperationHeaderProto" +
-      "\022/\n\007targets\030\002 \003(\0132\036.hadoop.hdfs.Datanode" +
-      "InfoProto\022.\n\006source\030\003 \001(\0132\036.hadoop.hdfs." +
-      "DatanodeInfoProto\022D\n\005stage\030\004 \002(\01625.hadoo" +
-      "p.hdfs.OpWriteBlockProto.BlockConstructi" +
-      "onStage\022\024\n\014pipelineSize\030\005 \002(\r\022\024\n\014minByte" +
-      "sRcvd\030\006 \002(\004\022\024\n\014maxBytesRcvd\030\007 \002(\004\022\035\n\025lat",
-      "estGenerationStamp\030\010 \002(\004\0225\n\021requestedChe" +
-      "cksum\030\t \002(\0132\032.hadoop.hdfs.ChecksumProto\022" +
-      ":\n\017cachingStrategy\030\n \001(\0132!.hadoop.hdfs.C" +
-      "achingStrategyProto\0228\n\013storageType\030\013 \001(\016" +
-      "2\035.hadoop.hdfs.StorageTypeProto:\004DISK\0229\n" +
-      "\022targetStorageTypes\030\014 \003(\0162\035.hadoop.hdfs." +
-      "StorageTypeProto\022\037\n\020allowLazyPersist\030\r \001" +
-      "(\010:\005false\022\026\n\007pinning\030\016 \001(\010:\005false\022\026\n\016tar" +
-      "getPinnings\030\017 \003(\010\022\021\n\tstorageId\030\020 \001(\t\022\030\n\020" +
-      "targetStorageIds\030\021 \003(\t\"\210\002\n\026BlockConstruc",
-      "tionStage\022\031\n\025PIPELINE_SETUP_APPEND\020\000\022\"\n\036" +
-      "PIPELINE_SETUP_APPEND_RECOVERY\020\001\022\022\n\016DATA" +
-      "_STREAMING\020\002\022%\n!PIPELINE_SETUP_STREAMING" +
-      "_RECOVERY\020\003\022\022\n\016PIPELINE_CLOSE\020\004\022\033\n\027PIPEL" +
-      "INE_CLOSE_RECOVERY\020\005\022\031\n\025PIPELINE_SETUP_C" +
-      "REATE\020\006\022\020\n\014TRANSFER_RBW\020\007\022\026\n\022TRANSFER_FI" +
-      "NALIZED\020\010\"\325\001\n\024OpTransferBlockProto\0227\n\006he" +
-      "ader\030\001 \002(\0132\'.hadoop.hdfs.ClientOperation" +
-      "HeaderProto\022/\n\007targets\030\002 \003(\0132\036.hadoop.hd" +
-      "fs.DatanodeInfoProto\0229\n\022targetStorageTyp",
-      "es\030\003 \003(\0162\035.hadoop.hdfs.StorageTypeProto\022" +
-      "\030\n\020targetStorageIds\030\004 \003(\t\"\321\001\n\023OpReplaceB" +
-      "lockProto\022,\n\006header\030\001 \002(\0132\034.hadoop.hdfs." +
-      "BaseHeaderProto\022\017\n\007delHint\030\002 \002(\t\022.\n\006sour" +
-      "ce\030\003 \002(\0132\036.hadoop.hdfs.DatanodeInfoProto" +
-      "\0228\n\013storageType\030\004 \001(\0162\035.hadoop.hdfs.Stor" +
-      "ageTypeProto:\004DISK\022\021\n\tstorageId\030\005 \001(\t\"@\n" +
-      "\020OpCopyBlockProto\022,\n\006header\030\001 \002(\0132\034.hado" +
-      "op.hdfs.BaseHeaderProto\"D\n\024OpBlockChecks" +
-      "umProto\022,\n\006header\030\001 \002(\0132\034.hadoop.hdfs.Ba",
-      "seHeaderProto\"\227\002\n\031OpBlockGroupChecksumPr" +
-      "oto\022,\n\006header\030\001 \002(\0132\034.hadoop.hdfs.BaseHe" +
-      "aderProto\0222\n\tdatanodes\030\002 \002(\0132\037.hadoop.hd" +
-      "fs.DatanodeInfosProto\022.\n\013blockTokens\030\003 \003" +
-      "(\0132\031.hadoop.common.TokenProto\0227\n\010ecPolic" +
-      "y\030\004 \002(\0132%.hadoop.hdfs.ErasureCodingPolic" +
-      "yProto\022\024\n\014blockIndices\030\005 \003(\r\022\031\n\021requeste" +
-      "dNumBytes\030\006 \002(\004\"0\n\026ShortCircuitShmIdProt" +
-      "o\022\n\n\002hi\030\001 \002(\003\022\n\n\002lo\030\002 \002(\003\"_\n\030ShortCircui" +
-      "tShmSlotProto\0222\n\005shmId\030\001 \002(\0132#.hadoop.hd",
-      "fs.ShortCircuitShmIdProto\022\017\n\007slotIdx\030\002 \002" +
-      "(\005\"\307\001\n OpRequestShortCircuitAccessProto\022" +
-      ",\n\006header\030\001 \002(\0132\034.hadoop.hdfs.BaseHeader" +
-      "Proto\022\022\n\nmaxVersion\030\002 \002(\r\0225\n\006slotId\030\003 \001(" +
-      "\0132%.hadoop.hdfs.ShortCircuitShmSlotProto" +
-      "\022*\n\033supportsReceiptVerification\030\004 \001(\010:\005f" +
-      "alse\"\232\001\n%ReleaseShortCircuitAccessReques" +
-      "tProto\0225\n\006slotId\030\001 \002(\0132%.hadoop.hdfs.Sho" +
-      "rtCircuitShmSlotProto\022:\n\ttraceInfo\030\002 \001(\013" +
-      "2\'.hadoop.hdfs.DataTransferTraceInfoProt",
-      "o\"\\\n&ReleaseShortCircuitAccessResponsePr" +
-      "oto\022#\n\006status\030\001 \002(\0162\023.hadoop.hdfs.Status" +
-      "\022\r\n\005error\030\002 \001(\t\"m\n\033ShortCircuitShmReques" +
-      "tProto\022\022\n\nclientName\030\001 \002(\t\022:\n\ttraceInfo\030" +
-      "\002 \001(\0132\'.hadoop.hdfs.DataTransferTraceInf" +
-      "oProto\"\203\001\n\034ShortCircuitShmResponseProto\022" +
-      "#\n\006status\030\001 \002(\0162\023.hadoop.hdfs.Status\022\r\n\005" +
-      "error\030\002 \001(\t\022/\n\002id\030\003 \001(\0132#.hadoop.hdfs.Sh" +
-      "ortCircuitShmIdProto\"\177\n\021PacketHeaderProt" +
-      "o\022\025\n\roffsetInBlock\030\001 \002(\020\022\r\n\005seqno\030\002 \002(\020\022",
-      "\031\n\021lastPacketInBlock\030\003 \002(\010\022\017\n\007dataLen\030\004 " +
-      "\002(\017\022\030\n\tsyncBlock\030\005 \001(\010:\005false\"z\n\020Pipelin" +
-      "eAckProto\022\r\n\005seqno\030\001 \002(\022\022\"\n\005reply\030\002 \003(\0162" +
-      "\023.hadoop.hdfs.Status\022!\n\026downstreamAckTim" +
-      "eNanos\030\003 \001(\004:\0010\022\020\n\004flag\030\004 \003(\rB\002\020\001\"\\\n\027Rea" +
-      "dOpChecksumInfoProto\022,\n\010checksum\030\001 \002(\0132\032" +
-      ".hadoop.hdfs.ChecksumProto\022\023\n\013chunkOffse" +
-      "t\030\002 \002(\004\"a\n\034ReadTraceOpChecksumInfoProto\022" +
-      ",\n\010checksum\030\001 \002(\0132\032.hadoop.hdfs.Checksum" +
-      "Proto\022\023\n\013chunkOffset\030\002 \002(\004\"\330\002\n\024BlockOpRe",
-      "sponseProto\022#\n\006status\030\001 \002(\0162\023.hadoop.hdf" +
-      "s.Status\022\024\n\014firstBadLink\030\002 \001(\t\022C\n\020checks" +
-      "umResponse\030\003 \001(\0132).hadoop.hdfs.OpBlockCh" +
-      "ecksumResponseProto\022@\n\022readOpChecksumInf" +
-      "o\030\004 \001(\0132$.hadoop.hdfs.ReadOpChecksumInfo" +
-      "Proto\022\017\n\007message\030\005 \001(\t\022!\n\031shortCircuitAc" +
-      "cessVersion\030\006 \001(\r\022J\n\027readTraceOpChecksum" +
-      "Info\030\007 \001(\0132).hadoop.hdfs.ReadTraceOpChec" +
-      "ksumInfoProto\"<\n\025ClientReadStatusProto\022#" +
-      "\n\006status\030\001 \002(\0162\023.hadoop.hdfs.Status\"9\n\022D",
-      "NTransferAckProto\022#\n\006status\030\001 \002(\0162\023.hado" +
-      "op.hdfs.Status\"\206\001\n\034OpBlockChecksumRespon" +
-      "seProto\022\023\n\013bytesPerCrc\030\001 \002(\r\022\023\n\013crcPerBl" +
-      "ock\030\002 \002(\004\022\013\n\003md5\030\003 \002(\014\022/\n\007crcType\030\004 \001(\0162" +
-      "\036.hadoop.hdfs.ChecksumTypeProto\"!\n\rOpCus" +
-      "tomProto\022\020\n\010customId\030\001 \002(\t*\214\002\n\006Status\022\013\n" +
-      "\007SUCCESS\020\000\022\t\n\005ERROR\020\001\022\022\n\016ERROR_CHECKSUM\020" +
-      "\002\022\021\n\rERROR_INVALID\020\003\022\020\n\014ERROR_EXISTS\020\004\022\026" +
-      "\n\022ERROR_ACCESS_TOKEN\020\005\022\017\n\013CHECKSUM_OK\020\006\022" +
-      "\025\n\021ERROR_UNSUPPORTED\020\007\022\017\n\013OOB_RESTART\020\010\022",
-      "\021\n\rOOB_RESERVED1\020\t\022\021\n\rOOB_RESERVED2\020\n\022\021\n" +
-      "\rOOB_RESERVED3\020\013\022\017\n\013IN_PROGRESS\020\014\022\026\n\022ERR" +
-      "OR_BLOCK_PINNED\020\r*[\n\026ShortCircuitFdRespo" +
-      "nse\022#\n\037DO_NOT_USE_RECEIPT_VERIFICATION\020\000" +
-      "\022\034\n\030USE_RECEIPT_VERIFICATION\020\001B>\n%org.ap" +
-      "ache.hadoop.hdfs.protocol.protoB\022DataTra" +
-      "nsferProtos\240\001\001"
+      "erIndex\030\006 \002(\r\022\026\n\016lostBlockIndex\030\007 \002(\r\022\022\n",
+      "\ndataBlkNum\030\010 \002(\r\022\024\n\014parityBlkNum\030\t \002(\r\"" +
+      "W\n\rChecksumProto\022,\n\004type\030\001 \002(\0162\036.hadoop." +
+      "hdfs.ChecksumTypeProto\022\030\n\020bytesPerChecks" +
+      "um\030\002 \002(\r\"\305\007\n\021OpWriteBlockProto\0227\n\006header" +
+      "\030\001 \002(\0132\'.hadoop.hdfs.ClientOperationHead" +
+      "erProto\022/\n\007targets\030\002 \003(\0132\036.hadoop.hdfs.D" +
+      "atanodeInfoProto\022.\n\006source\030\003 \001(\0132\036.hadoo" +
+      "p.hdfs.DatanodeInfoProto\022D\n\005stage\030\004 \002(\0162" +
+      "5.hadoop.hdfs.OpWriteBlockProto.BlockCon" +
+      "structionStage\022\024\n\014pipelineSize\030\005 \002(\r\022\024\n\014",
+      "minBytesRcvd\030\006 \002(\004\022\024\n\014maxBytesRcvd\030\007 \002(\004" +
+      "\022\035\n\025latestGenerationStamp\030\010 \002(\004\0225\n\021reque" +
+      "stedChecksum\030\t \002(\0132\032.hadoop.hdfs.Checksu" +
+      "mProto\022:\n\017cachingStrategy\030\n \001(\0132!.hadoop" +
+      ".hdfs.CachingStrategyProto\0228\n\013storageTyp" +
+      "e\030\013 \001(\0162\035.hadoop.hdfs.StorageTypeProto:\004" +
+      "DISK\0229\n\022targetStorageTypes\030\014 \003(\0162\035.hadoo" +
+      "p.hdfs.StorageTypeProto\022\037\n\020allowLazyPers" +
+      "ist\030\r \001(\010:\005false\022\026\n\007pinning\030\016 \001(\010:\005false" +
+      "\022\026\n\016targetPinnings\030\017 \003(\010\022\021\n\tstorageId\030\020 ",
+      "\001(\t\022\030\n\020targetStorageIds\030\021 \003(\t\"\210\002\n\026BlockC" +
+      "onstructionStage\022\031\n\025PIPELINE_SETUP_APPEN" +
+      "D\020\000\022\"\n\036PIPELINE_SETUP_APPEND_RECOVERY\020\001\022" +
+      "\022\n\016DATA_STREAMING\020\002\022%\n!PIPELINE_SETUP_ST" +
+      "REAMING_RECOVERY\020\003\022\022\n\016PIPELINE_CLOSE\020\004\022\033" +
+      "\n\027PIPELINE_CLOSE_RECOVERY\020\005\022\031\n\025PIPELINE_" +
+      "SETUP_CREATE\020\006\022\020\n\014TRANSFER_RBW\020\007\022\026\n\022TRAN" +
+      "SFER_FINALIZED\020\010\"\325\001\n\024OpTransferBlockProt" +
+      "o\0227\n\006header\030\001 \002(\0132\'.hadoop.hdfs.ClientOp" +
+      "erationHeaderProto\022/\n\007targets\030\002 \003(\0132\036.ha",
+      "doop.hdfs.DatanodeInfoProto\0229\n\022targetSto" +
+      "rageTypes\030\003 \003(\0162\035.hadoop.hdfs.StorageTyp" +
+      "eProto\022\030\n\020targetStorageIds\030\004 \003(\t\"\321\001\n\023OpR" +
+      "eplaceBlockProto\022,\n\006header\030\001 \002(\0132\034.hadoo" +
+      "p.hdfs.BaseHeaderProto\022\017\n\007delHint\030\002 \002(\t\022" +
+      ".\n\006source\030\003 \002(\0132\036.hadoop.hdfs.DatanodeIn" +
+      "foProto\0228\n\013storageType\030\004 \001(\0162\035.hadoop.hd" +
+      "fs.StorageTypeProto:\004DISK\022\021\n\tstorageId\030\005" +
+      " \001(\t\"@\n\020OpCopyBlockProto\022,\n\006header\030\001 \002(\013" +
+      "2\034.hadoop.hdfs.BaseHeaderProto\"D\n\024OpBloc",
+      "kChecksumProto\022,\n\006header\030\001 \002(\0132\034.hadoop." +
+      "hdfs.BaseHeaderProto\"\227\002\n\031OpBlockGroupChe" +
+      "cksumProto\022,\n\006header\030\001 \002(\0132\034.hadoop.hdfs" +
+      ".BaseHeaderProto\0222\n\tdatanodes\030\002 \002(\0132\037.ha" +
+      "doop.hdfs.DatanodeInfosProto\022.\n\013blockTok" +
+      "ens\030\003 \003(\0132\031.hadoop.common.TokenProto\0227\n\010" +
+      "ecPolicy\030\004 \002(\0132%.hadoop.hdfs.ErasureCodi" +
+      "ngPolicyProto\022\024\n\014blockIndices\030\005 \003(\r\022\031\n\021r" +
+      "equestedNumBytes\030\006 \002(\004\"0\n\026ShortCircuitSh" +
+      "mIdProto\022\n\n\002hi\030\001 \002(\003\022\n\n\002lo\030\002 \002(\003\"_\n\030Shor",
+      "tCircuitShmSlotProto\0222\n\005shmId\030\001 \002(\0132#.ha" +
+      "doop.hdfs.ShortCircuitShmIdProto\022\017\n\007slot" +
+      "Idx\030\002 \002(\005\"\307\001\n OpRequestShortCircuitAcces" +
+      "sProto\022,\n\006header\030\001 \002(\0132\034.hadoop.hdfs.Bas" +
+      "eHeaderProto\022\022\n\nmaxVersion\030\002 \002(\r\0225\n\006slot" +
+      "Id\030\003 \001(\0132%.hadoop.hdfs.ShortCircuitShmSl" +
+      "otProto\022*\n\033supportsReceiptVerification\030\004" +
+      " \001(\010:\005false\"\232\001\n%ReleaseShortCircuitAcces" +
+      "sRequestProto\0225\n\006slotId\030\001 \002(\0132%.hadoop.h" +
+      "dfs.ShortCircuitShmSlotProto\022:\n\ttraceInf",
+      "o\030\002 \001(\0132\'.hadoop.hdfs.DataTransferTraceI" +
+      "nfoProto\"\\\n&ReleaseShortCircuitAccessRes" +
+      "ponseProto\022#\n\006status\030\001 \002(\0162\023.hadoop.hdfs" +
+      ".Status\022\r\n\005error\030\002 \001(\t\"m\n\033ShortCircuitSh" +
+      "mRequestProto\022\022\n\nclientName\030\001 \002(\t\022:\n\ttra" +
+      "ceInfo\030\002 \001(\0132\'.hadoop.hdfs.DataTransferT" +
+      "raceInfoProto\"\203\001\n\034ShortCircuitShmRespons" +
+      "eProto\022#\n\006status\030\001 \002(\0162\023.hadoop.hdfs.Sta" +
+      "tus\022\r\n\005error\030\002 \001(\t\022/\n\002id\030\003 \001(\0132#.hadoop." +
+      "hdfs.ShortCircuitShmIdProto\"\177\n\021PacketHea",
+      "derProto\022\025\n\roffsetInBlock\030\001 \002(\020\022\r\n\005seqno" +
+      "\030\002 \002(\020\022\031\n\021lastPacketInBlock\030\003 \002(\010\022\017\n\007dat" +
+      "aLen\030\004 \002(\017\022\030\n\tsyncBlock\030\005 \001(\010:\005false\"z\n\020" +
+      "PipelineAckProto\022\r\n\005seqno\030\001 \002(\022\022\"\n\005reply" +
+      "\030\002 \003(\0162\023.hadoop.hdfs.Status\022!\n\026downstrea" +
+      "mAckTimeNanos\030\003 \001(\004:\0010\022\020\n\004flag\030\004 \003(\rB\002\020\001" +
+      "\"\\\n\027ReadOpChecksumInfoProto\022,\n\010checksum\030" +
+      "\001 \002(\0132\032.hadoop.hdfs.ChecksumProto\022\023\n\013chu" +
+      "nkOffset\030\002 \002(\004\"a\n\034ReadTraceOpChecksumInf" +
+      "oProto\022,\n\010checksum\030\001 \002(\0132\032.hadoop.hdfs.C",
+      "hecksumProto\022\023\n\013chunkOffset\030\002 \002(\004\"\330\002\n\024Bl" +
+      "ockOpResponseProto\022#\n\006status\030\001 \002(\0162\023.had" +
+      "oop.hdfs.Status\022\024\n\014firstBadLink\030\002 \001(\t\022C\n" +
+      "\020checksumResponse\030\003 \001(\0132).hadoop.hdfs.Op" +
+      "BlockChecksumResponseProto\022@\n\022readOpChec" +
+      "ksumInfo\030\004 \001(\0132$.hadoop.hdfs.ReadOpCheck" +
+      "sumInfoProto\022\017\n\007message\030\005 \001(\t\022!\n\031shortCi" +
+      "rcuitAccessVersion\030\006 \001(\r\022J\n\027readTraceOpC" +
+      "hecksumInfo\030\007 \001(\0132).hadoop.hdfs.ReadTrac" +
+      "eOpChecksumInfoProto\"<\n\025ClientReadStatus",
+      "Proto\022#\n\006status\030\001 \002(\0162\023.hadoop.hdfs.Stat" +
+      "us\"9\n\022DNTransferAckProto\022#\n\006status\030\001 \002(\016" +
+      "2\023.hadoop.hdfs.Status\"\206\001\n\034OpBlockChecksu" +
+      "mResponseProto\022\023\n\013bytesPerCrc\030\001 \002(\r\022\023\n\013c" +
+      "rcPerBlock\030\002 \002(\004\022\013\n\003md5\030\003 \002(\014\022/\n\007crcType" +
+      "\030\004 \001(\0162\036.hadoop.hdfs.ChecksumTypeProto\"!" +
+      "\n\rOpCustomProto\022\020\n\010customId\030\001 \002(\t*\214\002\n\006St" +
+      "atus\022\013\n\007SUCCESS\020\000\022\t\n\005ERROR\020\001\022\022\n\016ERROR_CH" +
+      "ECKSUM\020\002\022\021\n\rERROR_INVALID\020\003\022\020\n\014ERROR_EXI" +
+      "STS\020\004\022\026\n\022ERROR_ACCESS_TOKEN\020\005\022\017\n\013CHECKSU",
+      "M_OK\020\006\022\025\n\021ERROR_UNSUPPORTED\020\007\022\017\n\013OOB_RES" +
+      "TART\020\010\022\021\n\rOOB_RESERVED1\020\t\022\021\n\rOOB_RESERVE" +
+      "D2\020\n\022\021\n\rOOB_RESERVED3\020\013\022\017\n\013IN_PROGRESS\020\014" +
+      "\022\026\n\022ERROR_BLOCK_PINNED\020\r*[\n\026ShortCircuit" +
+      "FdResponse\022#\n\037DO_NOT_USE_RECEIPT_VERIFIC" +
+      "ATION\020\000\022\034\n\030USE_RECEIPT_VERIFICATION\020\001B>\n" +
+      "%org.apache.hadoop.hdfs.protocol.protoB\022" +
+      "DataTransferProtos\240\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -28639,7 +28852,7 @@ public final class DataTransferProtos {
           internal_static_hadoop_hdfs_OpReadBlockTraceProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_OpReadBlockTraceProto_descriptor,
-              new java.lang.String[] { "Header", "Offset", "Len", "SendChecksums", "CachingStrategy", "HelperIndex", "LostIndex", });
+              new java.lang.String[] { "Header", "Offset", "Len", "SendChecksums", "CachingStrategy", "HelperIndex", "LostBlockIndex", "DataBlkNum", "ParityBlkNum", });
           internal_static_hadoop_hdfs_ChecksumProto_descriptor =
             getDescriptor().getMessageTypes().get(7);
           internal_static_hadoop_hdfs_ChecksumProto_fieldAccessorTable = new
