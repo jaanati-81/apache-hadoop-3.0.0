@@ -59,47 +59,31 @@ public class TRRawDecoder extends RawErasureDecoder {
   protected void doDecode(ByteBufferDecodingState decodingState) {
     CoderUtil.resetOutputBuffers(decodingState.outputs,
             decodingState.decodeLength);
-    ByteBuffer output = decodingState.outputs[0];
-    int erasedIdx = decodingState.erasedIndexes[0];
-    //ourlog.write("\n ByteBuffer decode");
+    ByteBuffer output=decodingState.outputs[0];
+    int erasedIdx=decodingState.erasedIndexes[0];
+
 
     // column trace computation for the trace repair process
     prepareColumnTraces(decodingState.inputs, erasedIdx);
 
-    //compute 't' target traces from the column traces
-    computeTargetTraces();
 
-    //Now, recover the lost data and write to output buffer
-
-    //initialize recovered value as a 0 byte
-    byte recoveredValue = (byte)0;
-
-    //get the appropriate row element from the dual basis table
-    Object element = dBTable.getElement(erasedIdx);
-    String st = element.toString();
-    String[] elements = st.split(",");
-    Integer[] dualBasisInt = new Integer[t];
-
-    //convert the elements into bytes
-    byte[] dualBasisByte = new byte[t];
-    for(int m=0;m<elements.length; m++){
-      String dualBasisString = elements[m].toString();
-      dualBasisInt[m] = Integer.parseInt(dualBasisString.trim());
-      dualBasisByte[m] = dualBasisInt[m].byteValue();
-    }
+    // Compute 't' target traces from the column traces
+    // And recover the lost data and write to output buffer
+    computeTargetTracesAndRecoverBytes(erasedIdx, output);
 
 
-    for (int i = 0; i < decodingState.inputs.length; i++) {
-      if (i == erasedIdx) {
-        continue;
-      }
+    // Skip the erased location.
+    //method prepareColTraces() called from doDecode()
+    //1. Read the element R[i,erasedIndex] (returns a row of 9 elements)
+    //2. Represent the elements (2 to 9) as t-bit binary numbers based on first element(t) in the row (bandwidth)
+    //3. Bitwise AND the trace stored at node input[i] and the t-bit representations
+    //4. XOR all the bits
+    //5. column traces of dimension[(m*8)*(n-1)] where m is the number of traces
+    //within each i, we need to have another loop that specifies the traces from each input[i]
+    //method computeTargetTraces() (same logic as in the standalone version)
+    //method getRecoveredByte() (same logic as in the standalone version)
 
-      byte dualBByte = dualBasisByte[i];
-      if(targetTraces[i] == true) {
-        recoveredValue ^= dualBByte;
-      }
 
-      output.put(recoveredValue);
       /*for (iIdx = decodingState.inputs[i].position(), oIdx = output.position();
            iIdx < decodingState.inputs[i].limit();
            iIdx++, oIdx++) {
@@ -107,21 +91,12 @@ public class TRRawDecoder extends RawErasureDecoder {
         output.put(oIdx, (byte) (output.get(oIdx) ^
                 decodingState.inputs[i].get(iIdx)));
       }*/
+
     }
 
 
-      // Skip the erased location.
-      //method prepareColTraces() called from doDecode()
-      //1. Read the element R[i,erasedIndex] (returns a row of 9 elements)
-      //2. Represent the elements (2 to 9) as t-bit binary numbers based on first element(t) in the row (bandwidth)
-      //3. Bitwise AND the trace stored at node input[i] and the t-bit representations
-      //4. XOR all the bits
-      //5. column traces of dimension[(m*8)*(n-1)] where m is the number of traces
-      //within each i, we need to have another loop that specifies the traces from each input[i]
-      //method computeTargetTraces() (same logic as in the standalone version)
-      //method getRecoveredByte() (same logic as in the standalone version)
 
-  }
+
 
   //Function to calculate the log base 2 of a non-negative integer
   public int log2(int N)
@@ -169,101 +144,175 @@ public class TRRawDecoder extends RawErasureDecoder {
 
   }
 
+  /**
+   * Convert a byte array into a boolean array
+   *  @param bits a byte array of boolean values
+   *  @param significantBits the number of total bits in the byte array, and
+   *  therefore the length of the returned boolean array
+   *  @return a boolean[] containing the same boolean values as the byte[] array
+   *  adapted from https://sakai.rutgers.edu/wiki/site/e07619c5-a492-4ebe-8771-179dfe450ae4/bit-to-boolean%20conversion.html
+   */
+  public static boolean[] convertByteToBoolean(byte[] bits, int significantBits) {
+    boolean[] retVal = new boolean[significantBits];
+    int boolIndex = 0;
+    for (int byteIndex = 0; byteIndex < bits.length; ++byteIndex) {
+      for (int bitIndex = 7; bitIndex >= 0; --bitIndex) {
+        if (boolIndex >= significantBits) {
+          return retVal;
+        }
+
+        retVal[boolIndex++] = (bits[byteIndex] >> bitIndex & 0x01) == 1 ? true
+                : false;
+      }
+    }
+    return retVal;
+  }
+
 
   /**
-   * Compute column traces for trace repair
+   * Perform trace repair from the traces received and recover the lost block into outputs
    * @param inputs input buffers of the helper nodes to read the data from
    * @param erasedIdx indexes of erased unit in the inputs array
-    */
-  private void prepareColumnTraces(ByteBuffer[] inputs, int erasedIdx) {
+   */
+  protected void prepareColumnTraces(ByteBuffer[] inputs, int erasedIdx) {
 
-    for (int i=0; i < inputs.length; i++) {
-      int k=0;
-      if (i == erasedIdx) {
-        continue;
-      }
-      Object element=recTable.getElement(i, erasedIdx);
-      String st=element.toString();
-      String[] elements=st.split(",");
-      int traceBandwidth=Integer.parseInt(elements[0]);
-      ArrayList<Boolean> ar=new ArrayList<>();
 
-      for (int s=1; s <= t; s++) {
-        String repairString=elements[s].toString();
-        Integer repairInt=Integer.parseInt(repairString.trim());
-        boolean bin[]=binaryRep(traceBandwidth, repairInt);
+     int k=0;
+     for (int i=0; i < inputs.length; i++) { //iterate through all helpers
 
-        //Store the binary rep as a Vector
-        Vector<Boolean> binVec=new Vector<Boolean>(bin.length);
-        for (int m=0; m < bin.length; m++) {
-          System.out.println(bin[m]);
-          binVec.add(bin[m]);
-        }
+       if (i == erasedIdx) {
+         continue;
+       }
+       Object element=recTable.getElement(i, erasedIdx);
+       String st=element.toString();
+       String[] elements=st.split(",");
+       int traceBandwidth=Integer.parseInt(elements[0]);
 
-        //Get helper trace elements from helper i's inputs byte buffer into a byte array
-        byte[] helperTraceArrray=inputs[i].array();
-        //Create a BitSet containing all the bits in the given byte array.
-        BitSet helperTraceBits=BitSet.valueOf(helperTraceArrray);
 
-        //Now iterate through all bits, processing trace bit sets of size traceBandwidth at a time
-        for (int traceIndex=0; traceIndex < helperTraceArrray.length; traceIndex=traceIndex + traceBandwidth) {
-          //Returns a new BitSet composed of bits from helperTraceBits from fromIndex (inclusive) to toIndex (exclusive).
-          BitSet helperTrace=helperTraceBits.get(traceIndex, traceIndex + traceBandwidth);
+       //Get helper trace elements from helper i's inputs byte buffer into a byte array
+       byte[] helperTraceByteArray=inputs[i].array();
 
-          //Store the trace bits into an ArrayList
-          ArrayList<Boolean> helperTraceArray=new ArrayList<>();
-          for (int h=0; h < helperTrace.length(); h++)
-            helperTraceArray.add(helperTrace.get(h));
-          //Get helper trace elements computed earlier into a Vector
-          Vector<Boolean> helperTraceVector=new Vector<Boolean>(helperTraceArray);
 
-          //Boolean array to store the bit-wise & of binRep and helperTrace
-          boolean[] res=new boolean[traceBandwidth];
 
-          //Computing column traces ...
-          for (int l=0; l < traceBandwidth; l++) {
-            boolean a=Boolean.TRUE.equals(binVec.get(l));
-            boolean b=Boolean.TRUE.equals(helperTraceVector.get(l));
-            res[l]=a & b;
+       int originalBytesInInput = inputs[i].array().length; //FIX after checking with Rakesh and Uma
 
+       //Create a boolean array containing all the trace bits in the input byte array by calling convertByteToBoolean().
+       //The 2nd argument specifies the the total number of trace bits (#bytes in the buffer * traceBandwidth) in this input buffer
+       boolean[] helperTraceBooleanArray=convertByteToBoolean(helperTraceByteArray, originalBytesInInput*traceBandwidth);
+
+
+       //boolean arraylist to store the column traces from this helper node
+       ArrayList<Boolean> ar=new ArrayList<>();
+
+       //We need to process only traceBandwidth bits at a time from helper trace data
+       for (int traceBitsIndex=0; traceBitsIndex < helperTraceBooleanArray.length; traceBitsIndex=traceBitsIndex + traceBandwidth) {
+         //Returns a new boolean array composed of bits from helperTraceBooleanArray from fromIndex (inclusive) to toIndex (exclusive).
+         boolean[] helperTraceBits=Arrays.copyOfRange(helperTraceBooleanArray, traceBitsIndex, traceBitsIndex + traceBandwidth);
+
+         //Store the trace bits into an ArrayList
+         ArrayList<Boolean> helperTraceArray=new ArrayList<>();
+         for (int h=0; h < helperTraceBits.length; h++)
+           helperTraceArray.add(helperTraceBits[h]);
+
+         //Get helper trace elements computed into a Vector
+         Vector<Boolean> helperTraceVector=new Vector<Boolean>(helperTraceArray);
+
+         for (int s=1; s <= t; s++) {
+           String repairString=elements[s].toString();
+           Integer repairInt=Integer.parseInt(repairString.trim());
+           boolean bin[]=binaryRep(traceBandwidth, repairInt);
+
+
+           //Store the binary rep as a Vector
+           Vector<Boolean> binVec=new Vector<Boolean>(bin.length);
+           for (int m=0; m < bin.length; m++) {
+             // System.out.println(bin[m]);
+             binVec.add(bin[m]);
+           }
+
+
+           //Boolean array to store the bit-wise & of binRep and helperTrace
+           boolean[] res=new boolean[traceBandwidth];
+
+           //Computing column traces from this set of trace bits
+           for (int l=0; l < traceBandwidth; l++) {
+             boolean a=Boolean.TRUE.equals(binVec.get(l));
+             boolean b=Boolean.TRUE.equals(helperTraceVector.get(l));
+             res[l]=a & b;
+
+           }
+
+           //boolean to compute the XOR of all bits of res
+           boolean output=false;
+           for (int l=0; l < res.length; l++) {
+             output^=res[l];
+           }
+           //ArrayList to store the output bit
+           ar.add(output);
           }
 
-          //boolean to compute the XOR of all bits of res
-          boolean output=false;
-          for (int l=0; l < res.length; l++) {
-            output^=res[l];
-          }
-          //ArrayList to store the output bit
-          ar.add(output);
-          //Store this as the column trace of node k
-          columnTraces.put(k, ar);
-        }
+         }
+       //Store this as the column trace of helper node k
+       columnTraces.put(k, ar);
+       k++;
+       }
 
-      }
-      k++;
-    }
-  }
+     }
+
 
 
 
   /**
    * Compute t target traces from the column traces
+   * @param erasedIdx indexes of erased unit in the inputs array
+   * @param output the buffer to store the recovered bytes of the lost block
    * */
-  private void computeTargetTraces() {
+  private void computeTargetTracesAndRecoverBytes(int erasedIdx, ByteBuffer output) {
 
-    for(int s=0; s<t; s++){
-      boolean RHS = false;
-      for(int j=0; j<columnTraces.size(); j++) {
+    //Retrieve the dual basis element and keep it converted as byte
+    Object dBTableElement = dBTable.getElement(erasedIdx);
+    String st = dBTableElement.toString();
+    //System.out.println("Dual basis elements are: "+st);
+    String[] dBTableElements = st.split(",");
 
-        boolean colTraceBool=columnTraces.get(j).get(s);
-        RHS ^= colTraceBool;
-       }
-      targetTraces[s] = RHS;
+    Integer[] dualBasisInt = new Integer[t];
+    byte[] dualBasisByte = new byte[t];
+
+    for(int m=0;m<dBTableElements.length; m++){
+      String dualBasisString = dBTableElements[m].toString();
+      dualBasisInt[m] = Integer.parseInt(dualBasisString.trim());
+      dualBasisByte[m] = dualBasisInt[m].byteValue();
     }
-  }
 
 
+    //check tr limit with Hoang, discuss with Rakesh and Uma too
+    for(int tr=0, oIdx = output.position(); tr<columnTraces.size(); tr=tr+t, oIdx++) {
+          for (int s=0; s < t; s++) {
+            for (int j=tr; j < tr + t; j++) {
+              boolean RHS=false;
+              boolean colTraceBool=columnTraces.get(j).get(s);
+              RHS^=colTraceBool;
+              targetTraces[s]=RHS;
 
+            }
+          }
+
+          //Now use this set of target traces to compute the byte of lost block
+          byte recoveredValue=(byte) 0;
+
+          for (int s=0; s < t; s++) {
+
+            byte dualBByte=dualBasisByte[s]; //take the sth byte from dual basis array
+            if (targetTraces[s]) {
+            recoveredValue^=dualBByte;
+          }
+
+        }
+        output.put(oIdx, recoveredValue);
+      }
+
+
+    }
 
   @Override
   protected void doDecode(ByteArrayDecodingState decodingState) {

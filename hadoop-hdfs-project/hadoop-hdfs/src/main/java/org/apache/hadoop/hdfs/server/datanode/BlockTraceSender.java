@@ -560,30 +560,6 @@ class BlockTraceSender implements java.io.Closeable {
 
 
 
-   /* private void helperTrace(byte[] codeWord, int erasedIndex) throws IOException{
-
-        System.out.println("\n Computing traces...");
-        computeTraces(codeWord, erasedIndex);
-
-        System.out.print("\n Helper Table Elements: \n");
-
-        for(int m = 0; m < traceElements.size(); m++) {
-            System.out.print("\n");
-            System.out.print("\t" + traceElements.get(m));
-        }
-        //System.in.read();
-
-        System.out.print("\n Helper Traces from all helpers: \n");
-        for(int i = 0; i < helperTraces.size(); i++) {
-            System.out.print("\n");
-            System.out.print("\t"+helperTraces.get(i));
-
-        }
-        //System.in.read();
-
-
-    } */
-
     /**
      * Function to compute helper traces of the bytes from this helper node
      * Runs at each of the helper node and sends to the worker node for recovery
@@ -593,17 +569,21 @@ class BlockTraceSender implements java.io.Closeable {
      * @throws IOException
      */
 
-   private BitSet computeTraces(byte[] codeSymbols, int lostBlockIndex) throws IOException {
+   private boolean[] computeTraces(byte[] codeSymbols, int lostBlockIndex) throws IOException {
 
         int i = lostBlockIndex;
         int k = 0;
         int j = helperNodeIndex;
-        BitSet helperTraces = new BitSet();
+
 
         Object element = helperTable.getElement(j,i);
         String s = element.toString();
         String[] elements = s.split(",");
         int traceBandwidth = Integer.parseInt(elements[0]);
+
+        //The boolean array that will hold the trace bits from all the code symbols of this helper
+       int sizeOfBoolArray = codeSymbols.length*traceBandwidth; //number of bytes times traceBandwidth
+       boolean[] helperTraces = new boolean[sizeOfBoolArray];
 
         //Iterate though all bytes of the byte array which has the block's data
         //for each byte, find the helper trace, add it to the helperTraces bitset
@@ -619,10 +599,11 @@ class BlockTraceSender implements java.io.Closeable {
                 boolean traceBitsXor = false;
 
                 for(int m = 0; m < positions.size(); m++) {
-                    //XOR all bits of the codeword at the set positions of H table element
+                    //XOR all bits of the codeword symbol at the set positions of H table element
                     traceBitsXor = traceBitsXor ^ getBit(codeSymbol, positions.get(m));
                 }
-                helperTraces.set(p,traceBitsXor);
+                helperTraces[p] = traceBitsXor;
+               // helperTraces.set(p,traceBitsXor);
                 p++;
             }
         }
@@ -637,6 +618,35 @@ class BlockTraceSender implements java.io.Closeable {
      */
     private int numberOfChunks(long datalen) {
         return (int) ((datalen + chunkSize - 1)/chunkSize);
+    }
+
+
+    /**
+     * Convert a boolean array into a byte array
+     *  @param bools a boolean array of boolean values
+     *  @return a byte[] containing the boolean values (zero padded if boolean array is not a multiple of 8)
+     *  adapted from https://sakai.rutgers.edu/wiki/site/e07619c5-a492-4ebe-8771-179dfe450ae4/bit-to-boolean%20conversion.html
+     */
+    public static byte[] convertBooleanToByte(boolean[] bools) {
+        int length = bools.length / 8;
+        int mod = bools.length % 8;
+        if(mod != 0){
+            ++length;
+        }
+        byte[] retVal = new byte[length];
+        int boolIndex = 0;
+        for (int byteIndex = 0; byteIndex < retVal.length; ++byteIndex) {
+            for (int bitIndex = 7; bitIndex >= 0; --bitIndex) {
+                if (boolIndex >= bools.length) {
+                    return retVal;
+                }
+                if (bools[boolIndex++]) {
+                    retVal[byteIndex] |= (byte) (1 << bitIndex);
+                }
+            }
+        }
+
+        return retVal;
     }
 
     /**
@@ -697,13 +707,13 @@ class BlockTraceSender implements java.io.Closeable {
             ris.readDataFully(buf, dataOff, dataLen);
 
             //TRACE COMPUTATION CALL
-            BitSet helperTraces = computeTraces(buf, lostBlockIndex);
+            boolean[] helperTraces = computeTraces(buf, lostBlockIndex);
 
-            //convert the BitSet to byte array
-            byte[] traceByte = helperTraces.toByteArray();
+            //convert the boolean array to byte array
+            byte[] traceByte = convertBooleanToByte(helperTraces);
 
             //Copy the contents to buf, so buf gets replaced with helperTrace contents
-            buf = traceByte.clone();
+            buf = traceByte.clone(); //regenerated buf obj that stores all traces computed from this helper node
 
             if (verifyChecksum) {
                 verifyChecksum(buf, dataOff, dataLen, numChunks, checksumOff);
@@ -730,10 +740,8 @@ class BlockTraceSender implements java.io.Closeable {
             } else { */
 
 
-                // normal transfer
-                //TRACE COMPUTATION CALL
 
-            //regenerate the buf obj to store all traces computed
+
                 out.write(buf, headerOff, dataOff + dataLen - headerOff);
 
         } catch (IOException e) {
