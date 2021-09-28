@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <project name="maven-antrun-" default="main"  >
 <target name="main">
-  <delete dir="/home/hduser/IdeaProjects/apache-hadoop-3.0.0/hadoop-hdfs-project/hadoop-hdfs/target/test/data"/>
-  <mkdir dir="/home/hduser/IdeaProjects/apache-hadoop-3.0.0/hadoop-hdfs-project/hadoop-hdfs/target/test/data"/>
-  <mkdir dir="/home/hduser/IdeaProjects/apache-hadoop-3.0.0/hadoop-hdfs-project/hadoop-hdfs/target/log"/>
-  <copy todir="/home/hduser/IdeaProjects/apache-hadoop-3.0.0/hadoop-hdfs-project/hadoop-hdfs/target/test-classes/webapps">
-    <fileset dir="/home/hduser/IdeaProjects/apache-hadoop-3.0.0/hadoop-hdfs-project/hadoop-hdfs/target/webapps">
+  <delete dir="/home/hduser/IdeaProjects/TraceRepairHadoop/hadoop-hdfs-project/hadoop-hdfs/target/test/data"/>
+  <mkdir dir="/home/hduser/IdeaProjects/TraceRepairHadoop/hadoop-hdfs-project/hadoop-hdfs/target/test/data"/>
+  <mkdir dir="/home/hduser/IdeaProjects/TraceRepairHadoop/hadoop-hdfs-project/hadoop-hdfs/target/log"/>
+  <copy todir="/home/hduser/IdeaProjects/TraceRepairHadoop/hadoop-hdfs-project/hadoop-hdfs/target/test-classes/webapps">
+    <fileset dir="/home/hduser/IdeaProjects/TraceRepairHadoop/hadoop-hdfs-project/hadoop-hdfs/target/webapps">
       <exclude name="proto-*-web.xml"/>
       <exclude name="**/proto-web.xml"/>
     </fileset>

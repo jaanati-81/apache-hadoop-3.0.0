@@ -56,6 +56,7 @@ import com.google.common.annotations.VisibleForTesting;
 import org.apache.htrace.core.Tracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.util.OurECLogger;
 
 /**
  * This is a wrapper around connection to datanode
@@ -87,7 +88,7 @@ import org.slf4j.LoggerFactory;
 public class BlockTraceReaderRemote implements BlockReader {
 
     static final Logger LOG = LoggerFactory.getLogger(BlockTraceReaderRemote.class);
-    //private static OurECLogger ourlog = OurECLogger.getLogger(BlockReaderRemote.class);
+    private static OurECLogger ourlog = OurECLogger.getLogger(BlockTraceReaderRemote.class);
     static final int TCP_WINDOW_SIZE = 128 * 1024; // 128 KB;
 
     final private Peer peer;
@@ -278,17 +279,20 @@ public class BlockTraceReaderRemote implements BlockReader {
     }
 
     protected BlockTraceReaderRemote(String file, long blockId,
-                                DataChecksum checksum, boolean verifyChecksum,
-                                long startOffset, long firstChunkOffset,
-                                long bytesToRead, Peer peer,
-                                DatanodeID datanodeID, PeerCache peerCache,
-                                Tracer tracer,
-                                int networkDistance) {
+                                     DataChecksum checksum, boolean verifyChecksum,
+                                     long startOffset, long firstChunkOffset,
+                                     long bytesToRead, Peer peer,
+                                     DatanodeID datanodeID, PeerCache peerCache,
+                                     Tracer tracer,
+                                     int networkDistance) {
         // Path is used only for printing block and file information in debug
         this.peer = peer;
         this.datanodeID = datanodeID;
         this.in = peer.getInputStreamChannel();
         this.checksum = checksum;
+
+
+        //this.checksum.getChecksumType()
         this.verifyChecksum = verifyChecksum;
         this.startOffset = Math.max( startOffset, 0 );
         this.filename = file;
@@ -302,6 +306,8 @@ public class BlockTraceReaderRemote implements BlockReader {
         this.bytesNeededToFinish = bytesToRead + (startOffset - firstChunkOffset);
         bytesPerChecksum = this.checksum.getBytesPerChecksum();
         checksumSize = this.checksum.getChecksumSize();
+        ourlog.write("In BlockTraceReaderRemote cosntructor, bytesPerChecksum: "+bytesPerChecksum);
+        ourlog.write("In BlockTraceReaderRemote cosntructor, checksumSize: "+checksumSize);
         this.tracer = tracer;
         this.networkDistance = networkDistance;
     }
@@ -391,24 +397,28 @@ public class BlockTraceReaderRemote implements BlockReader {
      * @return New BlockReader instance, or null on error.
      */
     public static BlockReader newBlockTraceReader(String file,
-                                             ExtendedBlock block,
-                                             Token<BlockTokenIdentifier> blockToken,
-                                             long startOffset, long len,
-                                             boolean verifyChecksum,
-                                             String clientName,
-                                             Peer peer, DatanodeID datanodeID,
-                                             PeerCache peerCache,
-                                             CachingStrategy cachingStrategy,
-                                             Tracer tracer,
-                                             int networkDistance,
-                                             int lostBlockIndex, int helperNodeIndex,
-                                             int dataBlkNum, int parityBlkNum) throws IOException {
+                                                  ExtendedBlock block,
+                                                  Token<BlockTokenIdentifier> blockToken,
+                                                  long startOffset, long len,
+                                                  boolean verifyChecksum,
+                                                  String clientName,
+                                                  Peer peer, DatanodeID datanodeID,
+                                                  PeerCache peerCache,
+                                                  CachingStrategy cachingStrategy,
+                                                  Tracer tracer,
+                                                  int networkDistance,
+                                                  int erasedNodeIndex, int helperNodeIndex,
+                                                  int dataBlkNum, int parityBlkNum) throws IOException {
         // in and out will be closed when sock is closed (by the caller)
         final DataOutputStream out = new DataOutputStream(new BufferedOutputStream(
                 peer.getOutputStream()));
+        ourlog.write("Block trace reader creation");
         new Sender(out).readBlockTrace(block, blockToken, clientName, startOffset, len,
                 verifyChecksum, cachingStrategy,
-                lostBlockIndex, helperNodeIndex, dataBlkNum, parityBlkNum);
+                erasedNodeIndex, helperNodeIndex, dataBlkNum, parityBlkNum);
+        ourlog.write("Success!! erasedNodeIndex: "+erasedNodeIndex);
+        ourlog.write("helperNodeIndex: "+helperNodeIndex);
+
 
         //
         // Get bytes in block
@@ -418,22 +428,32 @@ public class BlockTraceReaderRemote implements BlockReader {
         BlockOpResponseProto status = BlockOpResponseProto.parseFrom(
                 PBHelperClient.vintPrefixed(in));
         checkSuccess(status, peer, block, file);
+        ourlog.write("BlockTraceReaderRemote, after checkSuccess() call..");
         ReadOpChecksumInfoProto checksumInfo =
                 status.getReadOpChecksumInfo();
-        DataChecksum checksum = DataTransferProtoUtil.fromProto(
-                checksumInfo.getChecksum());
+        DataChecksum checksum = DataChecksum.newDataChecksum(
+                DataChecksum.Type.NULL, 512);
+
+        //DataTransferProtoUtil.fromProto(
+        //  checksumInfo.getChecksum());
+
+
         //Warning when we get CHECKSUM_NULL?
 
         // Read the first chunk offset.
         long firstChunkOffset = checksumInfo.getChunkOffset();
 
+        ourlog.write("In BlockTraceReaderRemote newBlockTraceReader(), firstChunkOffset: "+firstChunkOffset);
+        ourlog.write("In BlockTraceReaderRemote newBlockTraceReader(), startOffset: "+startOffset);
+        ourlog.write("In BlockTraceReaderRemote newBlockTraceReader(), checksum.getBytesPerChecksum(): "+checksum.getBytesPerChecksum());
         if ( firstChunkOffset < 0 || firstChunkOffset > startOffset ||
-                firstChunkOffset <= (startOffset - checksum.getBytesPerChecksum())) {
-            throw new IOException("BlockTraceReader: error in first chunk offset (" +
+                firstChunkOffset <= startOffset - checksum.getBytesPerChecksum()) {
+            throw new IOException("BlockTraceReaderRemote: error in first chunk offset (" +
                     firstChunkOffset + ") startOffset is " +
                     startOffset + " for file " + file);
         }
 
+        ourlog.write("In BlockTraceReaderRemote newBlockTraceReader(), going to return BlockTraceReaderRemote object... ");
         return new BlockTraceReaderRemote(file, block.getBlockId(), checksum,
                 verifyChecksum, startOffset, firstChunkOffset, len, peer, datanodeID,
                 peerCache, tracer, networkDistance);
@@ -443,7 +463,7 @@ public class BlockTraceReaderRemote implements BlockReader {
             BlockOpResponseProto status, Peer peer,
             ExtendedBlock block, String file)
             throws IOException {
-        String logInfo = "for OP_READ_BLOCK"
+        String logInfo = "for OP_READ_TRACE"
                 + ", self=" + peer.getLocalAddressString()
                 + ", remote=" + peer.getRemoteAddressString()
                 + ", for file " + file

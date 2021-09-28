@@ -83,7 +83,7 @@ public final class SystemErasureCodingPolicies {
   private static final List<ErasureCodingPolicy> SYS_POLICIES =
       Collections.unmodifiableList(Arrays.asList(
           SYS_POLICY1, SYS_POLICY2, SYS_POLICY3, SYS_POLICY4,
-          SYS_POLICY5));
+          SYS_POLICY5, SYS_POLICY6));
 
   /**
    * System policies sorted by name for fast querying.

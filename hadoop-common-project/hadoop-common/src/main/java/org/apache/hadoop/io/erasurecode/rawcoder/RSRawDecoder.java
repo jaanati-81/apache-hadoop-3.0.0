@@ -102,6 +102,7 @@ public class RSRawDecoder extends RawErasureDecoder {
     ourlog.write("\n Inside RSRawDecoder: calling doDecode ByteArray...");
     RSUtil.encodeData(gfTables, dataLen, realInputs, realInputOffsets,
         decodingState.outputs, decodingState.outputOffsets);
+    ourlog.write("\n Inside RSRawDecoder: after decoding with RSUtil.encodeData call...");
   }
 
   private <T> void prepareDecoding(T[] inputs, int[] erasedIndexes) {

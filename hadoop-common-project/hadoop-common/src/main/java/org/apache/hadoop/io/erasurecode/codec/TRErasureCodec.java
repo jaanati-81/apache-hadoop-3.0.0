@@ -19,7 +19,6 @@ package org.apache.hadoop.io.erasurecode.codec;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
-//import org.apache.hadoop.hdfs.StripeReader;
 import org.apache.hadoop.io.erasurecode.ErasureCodecOptions;
 import org.apache.hadoop.io.erasurecode.coder.ErasureDecoder;
 import org.apache.hadoop.io.erasurecode.coder.ErasureEncoder;
@@ -27,26 +26,26 @@ import org.apache.hadoop.io.erasurecode.coder.TRErasureDecoder;
 import org.apache.hadoop.io.erasurecode.coder.TRErasureEncoder;
 import org.apache.hadoop.util.OurECLogger;
 /**
- * A Reed-Solomon erasure codec.
+ * A Trace-Repair erasure codec.
  */
 @InterfaceAudience.Private
 public class TRErasureCodec extends ErasureCodec {
-	private static OurECLogger ourlog = OurECLogger.getLogger(TRErasureCodec.class);
+    private static OurECLogger ourlog = OurECLogger.getLogger(TRErasureCodec.class);
 
-  public TRErasureCodec(Configuration conf, ErasureCodecOptions options) {
-    super(conf, options);
-  }
+    public TRErasureCodec(Configuration conf, ErasureCodecOptions options) {
+        super(conf, options);
+    }
 
-  @Override
-  public ErasureEncoder createEncoder() {
-	  ourlog.write("\n Inside RSErasureCodec: RSEncoder created...");
-    return new TRErasureEncoder(getCoderOptions());
-    
-  }
+    @Override
+    public ErasureEncoder createEncoder() {
+        ourlog.write("\n Inside TRErasureCodec: TREncoder creating...");
+        return new TRErasureEncoder(getCoderOptions());
 
-  @Override
-  public ErasureDecoder createDecoder() {
-	  ourlog.write("\n Inside RSErasureCodec: RSDecoder created...");
-    return new TRErasureDecoder(getCoderOptions());
-  }
+    }
+
+    @Override
+    public ErasureDecoder createDecoder() {
+        ourlog.write("\n Inside TRErasureCodec: TRDecoder creating...");
+        return new TRErasureDecoder(getCoderOptions());
+    }
 }

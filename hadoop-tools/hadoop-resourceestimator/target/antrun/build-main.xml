@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <project name="maven-antrun-" default="main"  >
 <target name="main">
-  <mkdir dir="/home/hduser/IdeaProjects/apache-hadoop-3.0.0/hadoop-tools/hadoop-resourceestimator/target/test-dir"/>
-  <mkdir dir="/home/hduser/IdeaProjects/apache-hadoop-3.0.0/hadoop-tools/hadoop-resourceestimator/target/test-dir"/>
+  <mkdir dir="/home/hduser/IdeaProjects/TraceRepairHadoop/hadoop-tools/hadoop-resourceestimator/target/test-dir"/>
+  <mkdir dir="/home/hduser/IdeaProjects/TraceRepairHadoop/hadoop-tools/hadoop-resourceestimator/target/test-dir"/>
 </target>
 </project>

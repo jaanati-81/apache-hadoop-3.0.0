@@ -179,11 +179,11 @@
                     </transformer>
                     <transformer>
                       <resource>META-INF/LICENSE.txt</resource>
-                      <file>/home/hduser/IdeaProjects/apache-hadoop-3.0.0/hadoop-client-modules/hadoop-client-api/../../LICENSE.txt</file>
+                      <file>/home/hduser/IdeaProjects/TraceRepairHadoop/hadoop-client-modules/hadoop-client-api/../../LICENSE.txt</file>
                     </transformer>
                     <transformer>
                       <resource>META-INF/NOTICE.txt</resource>
-                      <file>/home/hduser/IdeaProjects/apache-hadoop-3.0.0/hadoop-client-modules/hadoop-client-api/../../NOTICE.txt</file>
+                      <file>/home/hduser/IdeaProjects/TraceRepairHadoop/hadoop-client-modules/hadoop-client-api/../../NOTICE.txt</file>
                     </transformer>
                   </transformers>
                 </configuration>
@@ -216,7 +216,7 @@
                   </includes>
                   <canUpdateCopyright>false</canUpdateCopyright>
                   <roots>
-                    <root>/home/hduser/IdeaProjects/apache-hadoop-3.0.0/hadoop-client-modules/hadoop-client-api</root>
+                    <root>/home/hduser/IdeaProjects/TraceRepairHadoop/hadoop-client-modules/hadoop-client-api</root>
                   </roots>
                 </configuration>
               </execution>
@@ -224,7 +224,7 @@
             <configuration>
               <canUpdateCopyright>false</canUpdateCopyright>
               <roots>
-                <root>/home/hduser/IdeaProjects/apache-hadoop-3.0.0/hadoop-client-modules/hadoop-client-api</root>
+                <root>/home/hduser/IdeaProjects/TraceRepairHadoop/hadoop-client-modules/hadoop-client-api</root>
               </roots>
             </configuration>
           </plugin>

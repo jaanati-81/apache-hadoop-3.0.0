@@ -1,15 +1,12 @@
 package org.apache.hadoop.hdfs.server.datanode.erasurecode;
 
-//import org.apache.hadoop.io.erasurecode.coder.RSErasureEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class HelperTable96 {
-    List<List> HTable_9_6 = new ArrayList<List>();
+    private static List<List> HTable_9_6 = new ArrayList<List>();
 
-    //set the helper table entries
-    void HelperTable96() {
+    public HelperTable96() {
 
         List row1 = new ArrayList();
         row1.add("0, 0, 0, 0, 0, 0, 0, 0, 0");
@@ -112,6 +109,7 @@ public class HelperTable96 {
         row9.add("4, 214, 150, 169, 20, 0, 0, 0, 0, 0");
         row9.add("0, 0, 0, 0, 0, 0, 0, 0, 0");
 
+
         HTable_9_6.add(row1);
         HTable_9_6.add(row2);
         HTable_9_6.add(row3);
@@ -121,12 +119,14 @@ public class HelperTable96 {
         HTable_9_6.add(row7);
         HTable_9_6.add(row8);
         HTable_9_6.add(row9);
+
     }
 
-    //return the element at the location (i,j) to compute traces
+    //return the element at (i,j) to compute traces
     public Object getElement(int i, int j){
-        return HTable_9_6.get(i-1).get(j-1);
+        return HTable_9_6.get(i).get(j);
     }
+
 }
 
 

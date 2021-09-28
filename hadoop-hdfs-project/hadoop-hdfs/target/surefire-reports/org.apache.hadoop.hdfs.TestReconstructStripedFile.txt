@@ -1,0 +1,10 @@
+-------------------------------------------------------------------------------
+Test set: org.apache.hadoop.hdfs.TestReconstructStripedFile
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 65.401 sec <<< FAILURE! - in org.apache.hadoop.hdfs.TestReconstructStripedFile
+testRecoverOneDataBlockFullStripe(org.apache.hadoop.hdfs.TestReconstructStripedFile)  Time elapsed: 65.088 sec  <<< ERROR!
+java.io.IOException: Time out waiting for EC block reconstruction.
+	at org.apache.hadoop.hdfs.StripedFileTestUtil.waitForReconstructionFinished(StripedFileTestUtil.java:538)
+	at org.apache.hadoop.hdfs.TestReconstructStripedFile.assertFileBlocksReconstruction(TestReconstructStripedFile.java:376)
+	at org.apache.hadoop.hdfs.TestReconstructStripedFile.testRecoverOneDataBlockFullStripe(TestReconstructStripedFile.java:195)
+

@@ -222,11 +222,11 @@
                     </transformer>
                     <transformer>
                       <resource>META-INF/LICENSE.txt</resource>
-                      <file>/home/hduser/IdeaProjects/apache-hadoop-3.0.0/hadoop-client-modules/hadoop-client-runtime/../../LICENSE.txt</file>
+                      <file>/home/hduser/IdeaProjects/TraceRepairHadoop/hadoop-client-modules/hadoop-client-runtime/../../LICENSE.txt</file>
                     </transformer>
                     <transformer>
                       <resource>META-INF/NOTICE.txt</resource>
-                      <file>/home/hduser/IdeaProjects/apache-hadoop-3.0.0/hadoop-client-modules/hadoop-client-runtime/../../NOTICE.txt</file>
+                      <file>/home/hduser/IdeaProjects/TraceRepairHadoop/hadoop-client-modules/hadoop-client-runtime/../../NOTICE.txt</file>
                     </transformer>
                     <transformer>
                       <resource>META-INF/jboss-beans.xml</resource>
@@ -268,7 +268,7 @@
                   </includes>
                   <canUpdateCopyright>false</canUpdateCopyright>
                   <roots>
-                    <root>/home/hduser/IdeaProjects/apache-hadoop-3.0.0/hadoop-client-modules/hadoop-client-runtime</root>
+                    <root>/home/hduser/IdeaProjects/TraceRepairHadoop/hadoop-client-modules/hadoop-client-runtime</root>
                   </roots>
                 </configuration>
               </execution>
@@ -276,7 +276,7 @@
             <configuration>
               <canUpdateCopyright>false</canUpdateCopyright>
               <roots>
-                <root>/home/hduser/IdeaProjects/apache-hadoop-3.0.0/hadoop-client-modules/hadoop-client-runtime</root>
+                <root>/home/hduser/IdeaProjects/TraceRepairHadoop/hadoop-client-modules/hadoop-client-runtime</root>
               </roots>
             </configuration>
           </plugin>

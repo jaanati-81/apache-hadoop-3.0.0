@@ -131,7 +131,7 @@ public class TestReconstructStripedFile {
       cluster = null;
     }
   }
-
+/*
   @Test(timeout = 120000)
   public void testRecoverOneParityBlock() throws Exception {
     int fileLen = (dataBlkNum + 1) * blockSize + blockSize / 10;
@@ -179,15 +179,23 @@ public class TestReconstructStripedFile {
     int fileLen = parityBlkNum * blockSize + blockSize / 10;
     assertFileBlocksReconstruction("/testRecoverAllDataBlocks1", fileLen,
         ReconstructionType.DataOnly, parityBlkNum);
-  }
+  } */
 
-  @Test(timeout = 120000)
+ /* @Test(timeout = 120000)
   public void testRecoverOneDataBlock() throws Exception {
     int fileLen = (dataBlkNum + 1) * blockSize + blockSize / 10;
     assertFileBlocksReconstruction("/testRecoverOneDataBlock", fileLen,
         ReconstructionType.DataOnly, 1);
   }
-
+*/
+  @Test(timeout = 120000)
+  public void testRecoverOneDataBlockFullStripe() throws Exception {
+    //int fileLen = (dataBlkNum + 1) * blockSize + blockSize / 10;
+    int fileLen = (dataBlkNum + parityBlkNum) * cellSize;
+    assertFileBlocksReconstruction("/testRecoverOneDataBlock", fileLen,
+            ReconstructionType.DataOnly, 1);
+  }
+/*
   @Test(timeout = 120000)
   public void testRecoverOneDataBlock1() throws Exception {
     int fileLen = cellSize + cellSize/10;
@@ -215,7 +223,7 @@ public class TestReconstructStripedFile {
     assertFileBlocksReconstruction("/testRecoverAnyBlocks1", fileLen,
         ReconstructionType.Any, random.nextInt(parityBlkNum) + 1);
   }
-
+*/
   private int[] generateDeadDnIndices(ReconstructionType type, int deadNum,
       byte[] indices) {
     List<Integer> deadList = new ArrayList<>(deadNum);
@@ -412,6 +420,7 @@ public class TestReconstructStripedFile {
    * Tests that processErasureCodingTasks should not throw exceptions out due to
    * invalid ECTask submission.
    */
+  /*
   @Test
   public void testProcessErasureCodingTasksSubmitionShouldSucceed()
       throws Exception {
@@ -551,5 +560,5 @@ public class TestReconstructStripedFile {
       barrier.await();
       DataNodeFaultInjector.set(oldInjector);
     }
-  }
+  } */
 }

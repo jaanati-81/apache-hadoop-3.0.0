@@ -25,6 +25,7 @@ import org.apache.hadoop.hdfs.DFSUtilClient;
 import org.apache.hadoop.hdfs.server.datanode.DataNode;
 import org.apache.hadoop.hdfs.server.protocol.BlockECReconstructionCommand.BlockECReconstructionInfo;
 import org.apache.hadoop.util.Daemon;
+import org.apache.hadoop.util.OurECLogger;
 import org.slf4j.Logger;
 
 import java.util.Collection;
@@ -45,6 +46,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @InterfaceAudience.Private
 public final class ErasureCodingWorker {
   private static final Logger LOG = DataNode.LOG;
+  private static OurECLogger ourlog = OurECLogger.getLogger(ErasureCodingWorker.class);
 
   private final DataNode datanode;
   private final Configuration conf;
@@ -57,18 +59,18 @@ public final class ErasureCodingWorker {
     this.datanode = datanode;
     this.conf = conf;
     this.xmitWeight = conf.getFloat(
-        DFSConfigKeys.DFS_DN_EC_RECONSTRUCTION_XMITS_WEIGHT_KEY,
-        DFSConfigKeys.DFS_DN_EC_RECONSTRUCTION_XMITS_WEIGHT_DEFAULT
+            DFSConfigKeys.DFS_DN_EC_RECONSTRUCTION_XMITS_WEIGHT_KEY,
+            DFSConfigKeys.DFS_DN_EC_RECONSTRUCTION_XMITS_WEIGHT_DEFAULT
     );
     Preconditions.checkArgument(this.xmitWeight >= 0,
-        "Invalid value configured for " +
-            DFSConfigKeys.DFS_DN_EC_RECONSTRUCTION_XMITS_WEIGHT_KEY +
-            ", it can not be negative value (" + this.xmitWeight + ").");
+            "Invalid value configured for " +
+                    DFSConfigKeys.DFS_DN_EC_RECONSTRUCTION_XMITS_WEIGHT_KEY +
+                    ", it can not be negative value (" + this.xmitWeight + ").");
 
     initializeStripedReadThreadPool();
     initializeStripedBlkReconstructionThreadPool(conf.getInt(
-        DFSConfigKeys.DFS_DN_EC_RECONSTRUCTION_THREADS_KEY,
-        DFSConfigKeys.DFS_DN_EC_RECONSTRUCTION_THREADS_DEFAULT));
+            DFSConfigKeys.DFS_DN_EC_RECONSTRUCTION_THREADS_KEY,
+            DFSConfigKeys.DFS_DN_EC_RECONSTRUCTION_THREADS_DEFAULT));
   }
 
   private void initializeStripedReadThreadPool() {
@@ -76,38 +78,38 @@ public final class ErasureCodingWorker {
 
     // Essentially, this is a cachedThreadPool.
     stripedReadPool = new ThreadPoolExecutor(0, Integer.MAX_VALUE,
-        60, TimeUnit.SECONDS,
-        new SynchronousQueue<>(),
-        new Daemon.DaemonFactory() {
-          private final AtomicInteger threadIndex = new AtomicInteger(0);
+            60, TimeUnit.SECONDS,
+            new SynchronousQueue<>(),
+            new Daemon.DaemonFactory() {
+              private final AtomicInteger threadIndex = new AtomicInteger(0);
 
-          @Override
-          public Thread newThread(Runnable r) {
-            Thread t = super.newThread(r);
-            t.setName("stripedRead-" + threadIndex.getAndIncrement());
-            return t;
-          }
-        },
-        new ThreadPoolExecutor.CallerRunsPolicy() {
-          @Override
-          public void rejectedExecution(Runnable runnable,
-                                        ThreadPoolExecutor e) {
-            LOG.info("Execution for striped reading rejected, "
-                + "Executing in current thread");
-            // will run in the current thread
-            super.rejectedExecution(runnable, e);
-          }
-        });
+              @Override
+              public Thread newThread(Runnable r) {
+                Thread t = super.newThread(r);
+                t.setName("stripedRead-" + threadIndex.getAndIncrement());
+                return t;
+              }
+            },
+            new ThreadPoolExecutor.CallerRunsPolicy() {
+              @Override
+              public void rejectedExecution(Runnable runnable,
+                                            ThreadPoolExecutor e) {
+                LOG.info("Execution for striped reading rejected, "
+                        + "Executing in current thread");
+                // will run in the current thread
+                super.rejectedExecution(runnable, e);
+              }
+            });
 
     stripedReadPool.allowCoreThreadTimeOut(true);
   }
 
   private void initializeStripedBlkReconstructionThreadPool(int numThreads) {
     LOG.debug("Using striped block reconstruction; pool threads={}",
-        numThreads);
+            numThreads);
     stripedReconstructionPool = DFSUtilClient.getThreadPoolExecutor(2,
-        numThreads, 60, new LinkedBlockingQueue<>(),
-        "StripedBlockReconstruction-", false);
+            numThreads, 60, new LinkedBlockingQueue<>(),
+            "StripedBlockReconstruction-", false);
     stripedReconstructionPool.allowCoreThreadTimeOut(true);
   }
 
@@ -118,20 +120,36 @@ public final class ErasureCodingWorker {
    *
    */
   public void processErasureCodingTasks(
-      Collection<BlockECReconstructionInfo> ecTasks) {
+          Collection<BlockECReconstructionInfo> ecTasks) {
+    ourlog.write("In processErasureCodingTasks, number of ecTasks is: "+ecTasks.size());
     for (BlockECReconstructionInfo reconInfo : ecTasks) {
       int xmitsSubmitted = 0;
+      ourlog.write("In processErasureCodingTasks.. BlockECReconstructionInfo details..:" +reconInfo.toString());
+
+      for(int j=0; j< reconInfo.getLiveBlockIndices().length; j++){
+        ourlog.write("In processErasureCodingTasks.. BlockECReconstructionInfo getLiveIndices(): "+reconInfo.getLiveBlockIndices()[j]);
+      }
+
       try {
+
         StripedReconstructionInfo stripedReconInfo =
-            new StripedReconstructionInfo(
-            reconInfo.getExtendedBlock(), reconInfo.getErasureCodingPolicy(),
-            reconInfo.getLiveBlockIndices(), reconInfo.getSourceDnInfos(),
-            reconInfo.getTargetDnInfos(), reconInfo.getTargetStorageTypes(),
-            reconInfo.getTargetStorageIDs());
+                new StripedReconstructionInfo(
+                        reconInfo.getExtendedBlock(), reconInfo.getErasureCodingPolicy(),
+                        reconInfo.getLiveBlockIndices(), reconInfo.getSourceDnInfos(),
+                        reconInfo.getTargetDnInfos(), reconInfo.getTargetStorageTypes(),
+                        reconInfo.getTargetStorageIDs());
+
+        ourlog.write("In processErasureCodingTasks");
+
         // It may throw IllegalArgumentException from task#stripedReader
         // constructor.
+        ourlog.write("In processErasureCodingTasks, stripedReconInfo.getLiveIndices().length :"+stripedReconInfo.getLiveIndices().length);
+        for(int j=0; j< stripedReconInfo.getLiveIndices().length; j++){
+          ourlog.write("In processErasureCodingTasks.. stripedReconInfo.getLiveIndices(): "+stripedReconInfo.getLiveIndices()[j]);
+        }
         final StripedBlockReconstructor task =
-            new StripedBlockReconstructor(this, stripedReconInfo);
+                new StripedBlockReconstructor(this, stripedReconInfo);
+        ourlog.write("In processErasureCodingTasks, after StripedBlockReconstructor task creation");
         if (task.hasValidTargets()) {
           // See HDFS-12044. We increase xmitsInProgress even the task is only
           // enqueued, so that
@@ -143,14 +161,15 @@ public final class ErasureCodingWorker {
           stripedReconstructionPool.submit(task);
         } else {
           LOG.warn("No missing internal block. Skip reconstruction for task:{}",
-              reconInfo);
+                  reconInfo);
         }
       } catch (Throwable e) {
         getDatanode().decrementXmitsInProgress(xmitsSubmitted);
         LOG.warn("Failed to reconstruct striped block {}",
-            reconInfo.getExtendedBlock().getLocalBlock(), e);
+                reconInfo.getExtendedBlock().getLocalBlock(), e);
       }
     }
+    ourlog.write("In processErasureCodingTasks, after StripedBlockReconstructor task creation for all tasks..");
   }
 
   DataNode getDatanode() {

@@ -187,7 +187,7 @@ public class PacketReceiver implements Closeable {
           "exceeds data length received. dataPlusChecksumLen=" +
           dataPlusChecksumLen + " header: " + curHeader);
     }
-    ourlog.write("\n In doRead() of PacketReciver; the contents of the currently formed packet: "+curPacketBuf.toString());
+    //ourlog.write("\n In doRead() of PacketReciver; the contents of the currently formed packet: "+curPacketBuf.toString());
     reslicePacket(headerLen, checksumLen, curHeader.getDataLen());
   }
 
@@ -206,13 +206,13 @@ public class PacketReceiver implements Closeable {
   private static void doReadFully(ReadableByteChannel ch, InputStream in,
       ByteBuffer buf) throws IOException {
     if (ch != null) {
-      ourlog.write("\n ReadableByteChannel is not null, call readChannelFully()");
+      //ourlog.write("\n ReadableByteChannel is not null, call readChannelFully()");
       readChannelFully(ch, buf);
             
     } else {
       Preconditions.checkState(!buf.isDirect(),
           "Must not use direct buffers with InputStream API");
-      ourlog.write("\n ReadableByteChannel is null, call readFully() in IOUtils");
+     // ourlog.write("\n ReadableByteChannel is null, call readFully() in IOUtils");
       IOUtils.readFully(in, buf.array(),
           buf.arrayOffset() + buf.position(),
           buf.remaining());
@@ -247,7 +247,7 @@ public class PacketReceiver implements Closeable {
     curPacketBuf.position(lenThroughChecksums);
     curPacketBuf.limit(lenThroughData);
     curDataSlice = curPacketBuf.slice();
-    ourlog.write("\n In reslicePacket() of PacketReceiver, data slice in the current packet is: "+curDataSlice.toString());
+    //ourlog.write("\n In reslicePacket() of PacketReceiver, data slice in the current packet is: "+curDataSlice.toString());
 
     // Reset buffer to point to the entirety of the packet (including
     // length prefixes)
@@ -266,7 +266,7 @@ public class PacketReceiver implements Closeable {
         throw new IOException("Premature EOF reading from " + ch);
       }
     }
-    ourlog.write("\n Buffer value in readChannelFully() after reading completes: "+buf.toString());
+    //ourlog.write("\n Buffer value in readChannelFully() after reading completes: "+buf.toString());
   }
 
   private void reallocPacketBuf(int atLeastCapacity) {

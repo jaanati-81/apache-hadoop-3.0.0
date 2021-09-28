@@ -684,7 +684,7 @@ class DataXceiver extends Receiver implements Runnable {
                            final int parityBlkNum) throws IOException {
     previousOpClientName = clientName;
     long read = 0;
-    updateCurrentThreadName("Sending block " + block);
+    updateCurrentThreadName("Sending block trace " + block);
     OutputStream baseStream = getOutputStream();
     DataOutputStream out = getBufferedOutputStream();
     checkAccess(out, true, block, blockToken, Op.READ_TRACE,
@@ -705,7 +705,7 @@ class DataXceiver extends Receiver implements Runnable {
     try {
       try {
         blockTraceSender = new BlockTraceSender(block, blockOffset, length,
-            true, false, sendChecksum, datanode, clientTraceFmt,
+            false, false, false, datanode, clientTraceFmt,
             cachingStrategy, lostBlockIndex, helperNodeIndex, dataBlkNum, parityBlkNum);
       } catch(IOException e) {
         String msg = "opReadBlockTrace " + block + " received exception " + e;
@@ -718,7 +718,7 @@ class DataXceiver extends Receiver implements Runnable {
       writeSuccessWithChecksumInfo(blockTraceSender, new DataOutputStream(getOutputStream()));
 
       long beginRead = Time.monotonicNow();
-      read = blockTraceSender.sendBlock(out, baseStream, null); // send data
+      read = blockTraceSender.sendBlock(out, baseStream, null); // send trace data
       long duration = Time.monotonicNow() - beginRead;
       if (blockTraceSender.didSendEntireByteRange()) {
         // If we sent the entire range, then we should expect the client
@@ -1469,12 +1469,12 @@ class DataXceiver extends Receiver implements Runnable {
             .setChunkOffset(blockTraceSender.getOffset())
             .build();
 
-   /* BlockOpResponseProto response = BlockOpResponseProto.newBuilder()
+    BlockOpResponseProto response = BlockOpResponseProto.newBuilder()
             .setStatus(SUCCESS)
             .setReadTraceOpChecksumInfo(ckInfo)
             .build();
     response.writeDelimitedTo(out);
-    out.flush(); */
+    out.flush();
   }
 
 

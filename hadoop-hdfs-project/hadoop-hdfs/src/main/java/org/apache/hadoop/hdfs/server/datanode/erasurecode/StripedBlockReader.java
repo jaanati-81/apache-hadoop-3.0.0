@@ -70,8 +70,9 @@ class StripedBlockReader {
   private BlockReader blockReader;
   private ByteBuffer buffer;
   private boolean isLocal;
-  private boolean isTr;
+  private boolean isTr = false;
   private int helperIndex;
+  private int erasedIndex;
   private int dataBlkNum;
   private int parityBlkNum;
 
@@ -97,7 +98,7 @@ class StripedBlockReader {
   StripedBlockReader(StripedReader stripedReader, DataNode datanode,
                      Configuration conf, short index, ExtendedBlock block,
                      DatanodeInfo source, long offsetInBlock,
-                     boolean isTr, int helperIndex, int dataBlkNum, int parityBlkNum) {
+                     boolean isTr, int helperIndex, int erasedIndex, int dataBlkNum, int parityBlkNum) {
     this.stripedReader = stripedReader;
     this.datanode = datanode;
     this.conf = conf;
@@ -107,10 +108,12 @@ class StripedBlockReader {
     this.source = source;
     this.block = block;
     this.isLocal = false;
-    //flag to indicate whether trace repiar is enabled or not
+    //flag to indicate whether trace repair is enabled or not
     this.isTr = isTr;
-    //pass helper node's index to look up TR table
+    //pass helper node and erased node's index to look up TR table
+    //also pass dataBlkNum and parityBlkNum for accommodating multiple code params in TR framework (in future)
     this.helperIndex = helperIndex;
+    this.erasedIndex = erasedIndex;
     this.dataBlkNum = dataBlkNum;
     this.parityBlkNum = parityBlkNum;
     BlockReader tmpBlockReader = createBlockReader(offsetInBlock);
@@ -159,33 +162,35 @@ class StripedBlockReader {
         this.isLocal = true;
       }
       if (!isTr) {
+        ourlog.write("Instantiating BlockReaderRemote by passing all required params...");
         return BlockReaderRemote.newBlockReader(
                 "dummy", block, blockToken, offsetInBlock,
                 block.getNumBytes() - offsetInBlock, true, "", peer, source,
                 null, stripedReader.getCachingStrategy(), datanode.getTracer(), -1);
 
       } else{
+        ourlog.write("Instantiating BlockTraceReaderRemote by passing all required params...");
         return BlockTraceReaderRemote.newBlockTraceReader(
                 "dummy", block, blockToken, offsetInBlock,
-                block.getNumBytes() - offsetInBlock, true, "", peer, source,
+                block.getNumBytes() - offsetInBlock, false, "", peer, source,
                 null, stripedReader.getCachingStrategy(), datanode.getTracer(), -1,
-                index, helperIndex, dataBlkNum, parityBlkNum);
+                erasedIndex, helperIndex, dataBlkNum, parityBlkNum);
       }
     }
-      catch(IOException e){
+    catch(IOException e){
       LOG.info("Exception while creating remote block reader, datanode {}",
               source, e);
       return null;
     }
 
-    }
+  }
 
 
 
   private Peer newConnectedPeer(ExtendedBlock b, InetSocketAddress addr,
                                 Token<BlockTokenIdentifier> blockToken,
                                 DatanodeID datanodeId)
-      throws IOException {
+          throws IOException {
     Peer peer = null;
     boolean success = false;
     Socket sock = null;
@@ -194,8 +199,8 @@ class StripedBlockReader {
       sock = NetUtils.getDefaultSocketFactory(conf).createSocket();
       NetUtils.connect(sock, addr, socketTimeout);
       peer = DFSUtilClient.peerFromSocketAndKey(datanode.getSaslClient(),
-          sock, datanode.getDataEncryptionKeyFactoryForBlock(b),
-          blockToken, datanodeId, socketTimeout);
+              sock, datanode.getDataEncryptionKeyFactoryForBlock(b),
+              blockToken, datanodeId, socketTimeout);
       success = true;
       return peer;
     } finally {
@@ -218,7 +223,7 @@ class StripedBlockReader {
           return null;
         } catch (ChecksumException e) {
           LOG.warn("Found Checksum error for {} from {} at {}", block,
-              source, e.getPos());
+                  source, e.getPos());
           corruptedBlocks.addCorruptedBlock(block, source);
           throw e;
         } catch (IOException e) {

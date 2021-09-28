@@ -180,7 +180,7 @@ public class BlockReaderRemote implements BlockReader {
     ByteBuffer writeSlice = curDataSlice.duplicate();
     writeSlice.limit(writeSlice.position() + nRead);
     buf.put(writeSlice);
-    ourlog.write("\nData slice written after read() call in BlockReaderRemote: "+buf.toString());
+    //ourlog.write("\nData slice written after read() call in BlockReaderRemote: "+buf.toString());
     curDataSlice.position(writeSlice.position());
 
     return nRead;
@@ -195,7 +195,7 @@ public class BlockReaderRemote implements BlockReader {
     assert curDataSlice.capacity() == curHeader.getDataLen();
 
     LOG.trace("DFSClient readNextPacket got header {}", curHeader);
-    ourlog.write("\n In readNextPacket() of BlockReaderRemote, got header..");
+    //ourlog.write("\n In readNextPacket() of BlockReaderRemote, got header..");
     // Sanity check the lengths
     if (!curHeader.sanityCheck(lastSeqNo)) {
       throw new IOException("BlockReader: error in packet header " +
@@ -422,6 +422,7 @@ public class BlockReaderRemote implements BlockReader {
         status.getReadOpChecksumInfo();
     DataChecksum checksum = DataTransferProtoUtil.fromProto(
         checksumInfo.getChecksum());
+
     //Warning when we get CHECKSUM_NULL?
 
     // Read the first chunk offset.

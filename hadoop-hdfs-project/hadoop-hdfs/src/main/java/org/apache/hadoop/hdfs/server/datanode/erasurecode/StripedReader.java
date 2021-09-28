@@ -23,6 +23,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.DFSUtilClient.CorruptedBlocks;
 import org.apache.hadoop.hdfs.protocol.DatanodeInfo;
+import org.apache.hadoop.hdfs.protocol.ErasureCodingPolicy;
 import org.apache.hadoop.hdfs.server.datanode.CachingStrategy;
 import org.apache.hadoop.hdfs.server.datanode.DataNode;
 import org.apache.hadoop.hdfs.util.StripedBlockUtil;
@@ -31,6 +32,7 @@ import org.apache.hadoop.util.DataChecksum;
 import org.apache.hadoop.util.OurECLogger;
 import org.slf4j.Logger;
 
+import org.apache.hadoop.hdfs.protocol.ErasureCodingPolicy;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -79,6 +81,7 @@ class StripedReader {
   private ByteBuffer[] zeroStripeBuffers;
   private short[] zeroStripeIndices;
 
+  private int erasedIndex;
   // sources
   private final byte[] liveIndices;
   private final DatanodeInfo[] sources;
@@ -88,14 +91,18 @@ class StripedReader {
   private final Map<Future<Void>, Integer> futures = new HashMap<>();
   private final CompletionService<Void> readService;
 
+  private final BitSet liveBitSet;
+  private final ErasureCodingPolicy ecPolicy;
+
+
   StripedReader(StripedReconstructor reconstructor, DataNode datanode,
-      Configuration conf, StripedReconstructionInfo stripedReconInfo) {
+                Configuration conf, StripedReconstructionInfo stripedReconInfo) {
     stripedReadTimeoutInMills = conf.getInt(
-        DFSConfigKeys.DFS_DN_EC_RECONSTRUCTION_STRIPED_READ_TIMEOUT_MILLIS_KEY,
-        DFSConfigKeys.DFS_DN_EC_RECONSTRUCTION_STRIPED_READ_TIMEOUT_MILLIS_DEFAULT);
+            DFSConfigKeys.DFS_DN_EC_RECONSTRUCTION_STRIPED_READ_TIMEOUT_MILLIS_KEY,
+            DFSConfigKeys.DFS_DN_EC_RECONSTRUCTION_STRIPED_READ_TIMEOUT_MILLIS_DEFAULT);
     stripedReadBufferSize = conf.getInt(
-        DFSConfigKeys.DFS_DN_EC_RECONSTRUCTION_STRIPED_READ_BUFFER_SIZE_KEY,
-        DFSConfigKeys.DFS_DN_EC_RECONSTRUCTION_STRIPED_READ_BUFFER_SIZE_DEFAULT);
+            DFSConfigKeys.DFS_DN_EC_RECONSTRUCTION_STRIPED_READ_BUFFER_SIZE_KEY,
+            DFSConfigKeys.DFS_DN_EC_RECONSTRUCTION_STRIPED_READ_BUFFER_SIZE_DEFAULT);
 
     this.reconstructor = reconstructor;
     this.datanode = datanode;
@@ -104,34 +111,69 @@ class StripedReader {
     dataBlkNum = stripedReconInfo.getEcPolicy().getNumDataUnits();
     parityBlkNum = stripedReconInfo.getEcPolicy().getNumParityUnits();
     totalBlkNum = dataBlkNum + parityBlkNum;
+    ourlog.write("totalBlkNum: " + totalBlkNum);
 
     int cellsNum = (int) ((stripedReconInfo.getBlockGroup().getNumBytes() - 1)
-        / stripedReconInfo.getEcPolicy().getCellSize() + 1);
-    
-    if(stripedReconInfo.getEcPolicy().getCodecName().equals("tr")){
-        this.isTr = true;
-      //  if(stripedReconInfo.getLiveIndices().length != (totalBlkNum - 1))
-        //  break;
-    	minRequiredSources = Math.min(cellsNum, (totalBlkNum - 1));
-    	 if (minRequiredSources < (totalBlkNum - 1)) {
-    	      int zeroStripNum = (totalBlkNum - 1) - minRequiredSources;
-    	      zeroStripeBuffers = new ByteBuffer[zeroStripNum];
-    	      zeroStripeIndices = new short[zeroStripNum];
-    	    }
+            / stripedReconInfo.getEcPolicy().getCellSize() + 1);
+    ourlog.write("cellsNum: " + cellsNum);
+
+    this.ecPolicy = stripedReconInfo.getEcPolicy();
+
+    for (int j = 0; j < stripedReconInfo.getLiveIndices().length; j++) {
+      ourlog.write("Inside StripedReader...stripedReconInfo.getLiveIndices(): " + stripedReconInfo.getLiveIndices()[j]);
+    }
+
+    liveBitSet = new BitSet(
+            ecPolicy.getNumDataUnits() + ecPolicy.getNumParityUnits());
+    for (int i = 0; i < stripedReconInfo.getLiveIndices().length; i++) {
+      liveBitSet.set(stripedReconInfo.getLiveIndices()[i]);
+    }
+
+
+    ourlog.write("Live indices now: " + liveBitSet);
+
+
+
+    /* for (int i = 0; i < liveBitSet.length(); i++) {
+      liveBitSet.set(stripedReconInfo.getLiveIndices()[i]);
+    } */
+  /*  ourlog.write("Inside StripedReader..liveBitSet of Live Nodes is: "+liveBitSet);
+    // ourlog.write("stripedReconInfo.getLiveIndices().length :"+stripedReconInfo.getLiveIndices().length); */
+
+    ourlog.write("Inside StripedReader, Live node indices length: " + liveBitSet.length());
+    ourlog.write("Inside StripedReader, Live node indices size: " + liveBitSet.size());
+
+
+    ourlog.write("Codec name is: " + stripedReconInfo.getEcPolicy().getCodecName());
+
+    if (stripedReconInfo.getEcPolicy().getCodecName().equals("tr")) {
+      this.isTr = true;
+      ourlog.write("TR flag is on in StripedReader..");
+
+      //minRequiredSources = Math.min(cellsNum, (totalBlkNum - 1));
+      minRequiredSources = totalBlkNum - 1;
+      ourlog.write("minRequiredSources: " + minRequiredSources);
+      if (minRequiredSources < (totalBlkNum - 1)) {
+        int zeroStripNum = (totalBlkNum - 1) - minRequiredSources;
+        zeroStripeBuffers = new ByteBuffer[zeroStripNum];
+        zeroStripeIndices = new short[zeroStripNum];
+      }
     } else {
-    minRequiredSources = Math.min(cellsNum, dataBlkNum);
-    if (minRequiredSources < dataBlkNum) {
+      ourlog.write("RS StripedReader..");
+      minRequiredSources = Math.min(cellsNum, dataBlkNum);
+      if (minRequiredSources < dataBlkNum) {
         int zeroStripNum = dataBlkNum - minRequiredSources;
         zeroStripeBuffers = new ByteBuffer[zeroStripNum];
         zeroStripeIndices = new short[zeroStripNum];
       }
+      ourlog.write("minRequiredSources for RS code: " + minRequiredSources);
     }
 
     // It is calculated by the maximum number of connections from either sources
     // or targets.
     xmits = Math.max(minRequiredSources,
-        stripedReconInfo.getTargets() != null ?
-        stripedReconInfo.getTargets().length : 0);
+            stripedReconInfo.getTargets() != null ?
+                    stripedReconInfo.getTargets().length : 0);
 
     this.liveIndices = stripedReconInfo.getLiveIndices();
     assert liveIndices != null;
@@ -141,14 +183,17 @@ class StripedReader {
     readers = new ArrayList<>(sources.length);
     readService = reconstructor.createReadService();
 
+    ourlog.write("liveIndices.length: " + liveIndices.length);
+    ourlog.write("sources.length: " + sources.length);
+
     Preconditions.checkArgument(liveIndices.length >= minRequiredSources,
-        "No enough live striped blocks.");
+            "No enough live striped blocks.");
     Preconditions.checkArgument(liveIndices.length == sources.length,
-        "liveBlockIndices and source datanodes should match");
+            "liveBlockIndices and source datanodes should match");
   }
 
   void init() throws IOException {
-	  
+
     initReaders();
 
     initBufferSize();
@@ -163,48 +208,95 @@ class StripedReader {
     // some source DN is corrupted or slow. And use the updated successList
     // list of DNs for next iteration read.
     successList = new int[minRequiredSources];
-
+    ourlog.write("In initReaders()...minRequiredSources:" + minRequiredSources);
+    ourlog.write("Number of source nodes: " + sources.length);
     StripedBlockReader reader;
     int nSuccess = 0;
-    for (int i = 0; i < sources.length && nSuccess < minRequiredSources; i++) {
-      reader = createReader(i, 0);
-      readers.add(reader);
-      if (reader.getBlockReader() != null) {
-        initOrVerifyChecksum(reader);
-        successList[nSuccess++] = i;
-      }
-    }
 
+    if (this.isTr) {
+      ourlog.write("Begin TR reading initiliazation");
+      //stripedReconInfo.getEcPolicy().getCodecName()
+      for (int j = 0; j < totalBlkNum; j++) {
+        ourlog.write("This index is live or not: " + liveBitSet.get(j));
+        if (!liveBitSet.get(j)) {
+          erasedIndex = j;
+          break;
+        }
+      }
+      ourlog.write("initReaders, computed erasedIndex: " + erasedIndex);
+
+      for (int i = 0; i < sources.length && nSuccess < minRequiredSources; i++) {
+
+        //we know failed node index erasedIndex
+        //if i < j, then call createReader(i)
+        //if i >= j, then call createReader(i+1)
+        //this logic excludes the erasedIndex and creates readers with only live node indices
+        int j = i; //to store idxInSources
+        if (i < erasedIndex)
+          reader = createTRReader(j, i, 0);
+        else
+          reader = createTRReader(j, i + 1, 0);
+        readers.add(reader);
+        if (reader.getBlockReader() != null) {
+          initOrVerifyChecksum(reader);
+          successList[nSuccess++] = i;
+        }
+      }
+    } else {
+      ourlog.write("Begin RS reading initiliazation");
+      for (int i = 0; i < sources.length && nSuccess < minRequiredSources; i++) {
+        reader = createReader(i, 0);
+        readers.add(reader);
+        if (reader.getBlockReader() != null) {
+          initOrVerifyChecksum(reader);
+          successList[nSuccess++] = i;
+        }
+      }
+
+    }
     if (nSuccess < minRequiredSources) {
+      ourlog.write("Can't find minimum sources required by reconstruction, block id: " + reconstructor.getBlockGroup().getBlockId());
       String error = "Can't find minimum sources required by "
-          + "reconstruction, block id: "
-          + reconstructor.getBlockGroup().getBlockId();
+              + "reconstruction, block id: "
+              + reconstructor.getBlockGroup().getBlockId();
       throw new IOException(error);
     }
+
+    ourlog.write("Readers created for: " + successList.toString());
   }
 
-  StripedBlockReader createReader(int idxInSources, long offsetInBlock) {
-    if(!isTr) {
+
+    StripedBlockReader createReader(int idxInSources, long offsetInBlock) {
+      ourlog.write("In RS createReader..");
       return new StripedBlockReader(this, datanode,
               conf, liveIndices[idxInSources],
               reconstructor.getBlock(liveIndices[idxInSources]),
               sources[idxInSources], offsetInBlock);
-    } else{
+    }
+
+    StripedBlockReader createTRReader(int idxInSources, int helperIndex, long offsetInBlock) {
+      ourlog.write("Helper node (Reader) Index is: "+helperIndex);
+      ourlog.write("Erased node Index is: "+erasedIndex);
+      ourlog.write("dataBlkNum: "+dataBlkNum);
+      ourlog.write("parityBlkNum: "+parityBlkNum);
+      ourlog.write("liveIndices size:"+liveIndices.length);
+      ourlog.write("liveIndices[idxInSources] :"+liveIndices[idxInSources]);
+      ourlog.write("reconstructor.getBlock(liveIndices[idxInSources]): "+reconstructor.getBlock(liveIndices[idxInSources]).toString());
+      ourlog.write("sources[idxInSources]: "+sources[idxInSources]);
       return new StripedBlockReader(this, datanode,
               conf, liveIndices[idxInSources],
               reconstructor.getBlock(liveIndices[idxInSources]),
               sources[idxInSources], offsetInBlock,
-              isTr, idxInSources, dataBlkNum, parityBlkNum);
-
+              isTr, helperIndex, erasedIndex, dataBlkNum, parityBlkNum);
     }
-  }
+
 
   private void initBufferSize() {
     int bytesPerChecksum = checksum.getBytesPerChecksum();
     // The bufferSize is flat to divide bytesPerChecksum
     int readBufferSize = stripedReadBufferSize;
     bufferSize = readBufferSize < bytesPerChecksum ? bytesPerChecksum :
-        readBufferSize - readBufferSize % bytesPerChecksum;
+            readBufferSize - readBufferSize % bytesPerChecksum;
   }
 
   // init checksum from block reader
@@ -303,9 +395,9 @@ class StripedReader {
 
   int[] doReadMinimumSources(int reconstructLength,
                              CorruptedBlocks corruptedBlocks)
-      throws IOException {
+          throws IOException {
     Preconditions.checkArgument(reconstructLength >= 0 &&
-        reconstructLength <= bufferSize);
+            reconstructLength <= bufferSize);
     int nSuccess = 0;
     int[] newSuccess = new int[minRequiredSources];
     BitSet usedFlag = new BitSet(sources.length);
@@ -316,11 +408,11 @@ class StripedReader {
     for (int i = 0; i < minRequiredSources; i++) {
       StripedBlockReader reader = readers.get(successList[i]);
       int toRead = getReadLength(liveIndices[successList[i]],
-          reconstructLength);
-      ourlog.write("\n In doReadMinimumSources() of StripedReader..\n DN: "+i+"\n Computed toRead, to call readFromBlock() of StripedBlockReader");
+              reconstructLength);
+      ourlog.write("\n In doReadMinimumSources() of StripedReader.. \n DN: "+i+" Computed toRead, to call readFromBlock() of StripedBlockReader");
       if (toRead > 0) {
         Callable<Void> readCallable =
-            reader.readFromBlock(toRead, corruptedBlocks);
+                reader.readFromBlock(toRead, corruptedBlocks);
         Future<Void> f = readService.submit(readCallable);
         futures.put(f, successList[i]);
       } else {
@@ -334,8 +426,8 @@ class StripedReader {
     while (!futures.isEmpty()) {
       try {
         StripingChunkReadResult result =
-            StripedBlockUtil.getNextCompletedStripedRead(
-                readService, futures, stripedReadTimeoutInMills);
+                StripedBlockUtil.getNextCompletedStripedRead(
+                        readService, futures, stripedReadTimeoutInMills);
         int resultIndex = -1;
         if (result.state == StripingChunkReadResult.SUCCESSFUL) {
           resultIndex = result.index;
@@ -345,11 +437,11 @@ class StripedReader {
           StripedBlockReader failedReader = readers.get(result.index);
           failedReader.closeBlockReader();
           resultIndex = scheduleNewRead(usedFlag,
-              reconstructLength, corruptedBlocks);
+                  reconstructLength, corruptedBlocks);
         } else if (result.state == StripingChunkReadResult.TIMEOUT) {
           // If timeout, we also schedule a new read.
           resultIndex = scheduleNewRead(usedFlag,
-              reconstructLength, corruptedBlocks);
+                  reconstructLength, corruptedBlocks);
         }
         if (resultIndex >= 0) {
           newSuccess[nSuccess++] = resultIndex;
@@ -371,8 +463,8 @@ class StripedReader {
 
     if (nSuccess < minRequiredSources) {
       String error = "Can't read data from minimum number of sources "
-          + "required by reconstruction, block id: " +
-          reconstructor.getBlockGroup().getBlockId();
+              + "required by reconstruction, block id: " +
+              reconstructor.getBlockGroup().getBlockId();
       throw new IOException(error);
     }
 
@@ -442,7 +534,7 @@ class StripedReader {
     // step3: schedule if find a correct source DN and need to do real read.
     if (reader != null) {
       Callable<Void> readCallable =
-          reader.readFromBlock(toRead, corruptedBlocks);
+              reader.readFromBlock(toRead, corruptedBlocks);
       Future<Void> f = readService.submit(readCallable);
       futures.put(f, m);
       used.set(m);

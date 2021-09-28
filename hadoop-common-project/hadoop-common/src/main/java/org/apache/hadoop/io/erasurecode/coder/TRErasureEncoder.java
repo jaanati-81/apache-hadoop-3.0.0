@@ -27,7 +27,7 @@ import org.apache.hadoop.io.erasurecode.rawcoder.RawErasureEncoder;
 import org.apache.hadoop.util.OurECLogger;
 
 /**
- * Reed-Solomon erasure encoder that encodes a block group.
+ * Trace-Repair erasure encoder that encodes a block group.
  *
  * It implements {@link ErasureCoder}.
  */
@@ -48,14 +48,14 @@ public class TRErasureEncoder extends ErasureEncoder {
     ECBlock[] inputBlocks = getInputBlocks(blockGroup);
     ourlog.write("Inside TRErasureEncoder: prepared input block groups for the encoding step");
     return new ErasureEncodingStep(inputBlocks,
-        getOutputBlocks(blockGroup), rawEncoder);
+            getOutputBlocks(blockGroup), rawEncoder);
   }
 
   private RawErasureEncoder checkCreateTRRawEncoder() {
     if (rawEncoder == null) {
       // TODO: we should create the raw coder according to codec.
       rawEncoder = CodecUtil.createRawEncoder(getConf(),
-          ErasureCodeConstants.TR_CODEC_NAME, getOptions());
+              ErasureCodeConstants.TR_CODEC_NAME, getOptions());
     }
     return rawEncoder;
   }

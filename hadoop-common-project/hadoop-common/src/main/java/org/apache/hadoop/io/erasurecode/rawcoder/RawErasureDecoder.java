@@ -23,6 +23,8 @@ import org.apache.hadoop.io.erasurecode.ErasureCoderOptions;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
+
 import org.apache.hadoop.util.OurECLogger;
 
 /**
@@ -93,13 +95,15 @@ public abstract class RawErasureDecoder {
       return;
     }
 
+    ourlog.write("Inside RawErasureDecoder, inputs.length: "+inputs.length);
     int[] inputPositions = new int[inputs.length];
     for (int i = 0; i < inputPositions.length; i++) {
       if (inputs[i] != null) {
         inputPositions[i] = inputs[i].position();
       }
     }
-
+    ourlog.write("inputPositions array is now: ");
+    ourlog.write(Arrays.toString(inputPositions));
     if (usingDirectBuffer) {
       doDecode(decodingState);  //calls real implementation in the Decoder class (here its abstract)
     } else {
@@ -113,6 +117,7 @@ public abstract class RawErasureDecoder {
         inputs[i].position(inputPositions[i] + dataLen);
       }
     }
+    ourlog.write("\n Inside RawErasureDecoder: after doDecode() execution");
   }
 
   /**
